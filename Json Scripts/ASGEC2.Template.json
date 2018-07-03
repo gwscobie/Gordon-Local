@@ -1,0 +1,433 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Standard EC2 environment using an auto-scaling group with an Elastic Load Balancer to distribute traffic.",
+    "Parameters": {
+        "InstanceName": {
+          "Type": "String",
+          "Description": "A descriptive name to give the instances, e.g. WEB. This will be prefixed by the Country and suffixed by the Environment automatically."
+        },
+        "AMI": {
+            "Description": "AMI ID",
+            "Type": "AWS::EC2::Image::Id",
+            "Default": "ami-4f0e4a36"
+        },
+        "MinSize": {
+          "Type": "Number",
+          "Default": "1",
+          "Description": "The min number of Instances"
+        },
+        "MaxSize": {
+          "Type": "Number",
+          "Default": "1",
+          "Description": "The max number of Instances"
+        },
+        "InstanceType": {
+            "Description": "Type of EC2 instance to launch.",
+            "Type": "String",
+            "Default": "t2.micro",
+            "AllowedValues": [
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type."
+        },
+        "SSLCertificate": {
+          "Description": "SSL certificate to put on the ELB.",
+          "Type": "String",
+          "AllowedValues": [
+              "wildcard-arcade-uk",
+              "wildcard-tombola-com",
+              "wildcard-tombola-it",
+              "wildcard-tombola-es",
+              "wildcard-tombola-pt",
+              "wildcard-tombola-se",
+              "wildcard-tombola-uk"
+          ]
+        },
+        "OctopusRoles": {
+          "Description": "Roles to tag instances with in OD to enable deployment of projects.",
+          "Type": "String",
+          "Default": "NXLog"
+        },
+        "LoadBalancerPort": {
+          "Description": "Port for the ELB to listen on.",
+          "Type": "Number",
+          "Default": 443,
+          "MinValue": 1,
+          "MaxValue": 65336
+        },
+        "InstancePort": {
+          "Description": "Port for the Instance to listen on.",
+          "Type": "Number",
+          "Default": 80,
+          "MinValue": 1,
+          "MaxValue": 65336
+        },
+        "ConnectionDrainingTimeout": {
+          "Description": "Connection draining timeout before remove an instance from the ELB.",
+          "Type": "Number",
+          "Default": 15,
+          "MinValue": 1,
+          "MaxValue": 600
+        },
+        "ScalingUpThreshold": {
+            "Description": "The CPU threshold above which to increase the number of instances in the ASG.",
+            "Type": "Number",
+            "Default": 60,
+            "MinValue": 1,
+            "MaxValue": 100
+        },
+        "ScalingDownThreshold": {
+            "Description": "The CPU threshold below which to decrease the number of instances in the ASG.",
+            "Type": "Number",
+            "Default": 20,
+            "MinValue": 1,
+            "MaxValue": 100
+        },
+        "SecurityGroups": {
+            "Type": "List<AWS::EC2::SecurityGroup::Id>",
+            "Description": "The security groups to be added to the ELB."
+        },
+        "Division": {
+          "Description": "The division that will be consuming/is provisioning this service.",
+          "Type": "String",
+          "AllowedValues": [
+            "Core",
+            "Arcade",
+            "Bingo",
+            "International"
+          ]
+        },
+        "Team": {
+          "Description": "The team that will be primarily consuming/is provisioning this service.",
+          "Type": "String",
+          "AllowedValues": [
+            "Client",
+            "Engine",
+            "Platform",
+            "ISA",
+            "Infra",
+            "Data Engineering"
+          ]
+        },
+        "Role": {
+          "Description": "The role this service will be helping to complete.",
+          "Type": "String",
+          "AllowedValues": [
+            "Build",
+            "Chat",
+            "Data",
+            "DB",
+            "Game",
+            "Infrastructure",
+            "Reporting",
+            "Testing",
+            "VPN",
+            "Web",
+            "Misc"
+          ]
+        },
+        "Country": {
+            "Description": "The country that will be primarily consuming/is provisioning this service or EU for all.",
+            "Type": "String",
+            "AllowedValues": [
+              "DK",
+              "ES",
+              "SE",
+              "EU",
+              "IT",
+              "NL",
+              "PT",
+              "UK"
+            ]
+        },
+        "ChangeNo": {
+          "Description": "A change number or JIRA ticket that records the authorisation for the stack to be built or the feature request this stack is part of.",
+          "Type": "String"
+        }
+    },
+    "Metadata": {
+        "ProductName": "Standard EC2 Environment",
+        "AWS::CloudFormation::Interface" : {
+            "ParameterGroups": [{
+                "Label": { "default": "Instance Settings" },
+                "Parameters": [ "InstanceName", "InstanceType", "OctopusRoles" ]
+              }, {
+                  "Label": { "default": "Load Balancer Settings" },
+                  "Parameters": [ "SSLCertificate", "LoadBalancerPort", "InstancePort", "SecurityGroups", "ConnectionDrainingTimeout" ]
+              }, {
+                  "Label": { "default": "Scaling Settings" },
+                  "Parameters": [ "MinSize", "MaxSize", "ScalingUpThreshold", "ScalingDownThreshold" ]
+              }, {
+                  "Label": { "default": "Misc Details" },
+                  "Parameters": [ "Division", "Team", "Role", "Country", "ChangeNo" ]
+              }],
+              "ParameterLabels": {
+                  "OctopusRoles": { "default": "Octopus Roles" },
+                  "SSLCertificate": { "default": "Load Balancer SSL Certificate" },
+                  "LoadBalancerPort": { "default": "Load Balancer Port" },
+                  "InstancePort": { "default": "Instance Port" },
+                  "ConnectionDrainingTimeout": { "default": "Connection Draining Timeout" },
+                  "MinSize": { "default": "Min Number of Instances" },
+                  "MaxSize": { "default": "Max Number of Instances" },
+                  "InstanceName": { "default": "Instance Name" },
+                  "ScalingUpThreshold": { "default": "Scaling Up Threshold" },
+                  "ScalingDownThreshold": { "default": "Scaling Down Threshold" },
+                  "InstanceType": { "default": "Instance Type" },
+                  "ChangeNo": { "default": "Change Number" },
+                  "SecurityGroups": { "default": "Security Groups" }
+              }
+        }
+    },
+    "Mappings": {
+      "SSLCertificateToCode": {
+        "wildcard-tombola-uk": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/f12bfaf4-2354-46ed-87a9-fb07c117b769", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/280125e6-09a6-470c-a587-cfdcc8317cc5", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/6bab9d4a-a7b6-4dab-b3b3-303c7a3390de", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/1a347d01-e41f-41ca-963d-a1b8279fe0de", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/ea14c595-1bdd-4037-98c4-0d5dd65d3313", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/378f64a7-c347-4e80-b068-7c99b1dfb4f9" },
+        "wildcard-tombola-it": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/dbc84553-7245-4d36-97f9-8458f2dfc2cf", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/add747f2-5540-4679-860c-6410c80f34f1", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/1a503a35-2e8a-4c10-a4d5-1299e655398b", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/bdb2a7a2-a9d7-4a29-93c0-56917b6bf208", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/b943fe91-954b-4bf8-814e-5230011f634b", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/72054d5e-3e8c-4eb5-9a65-e101dd07fa58" },
+        "wildcard-tombola-es": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/d8f99f82-d7ab-45bd-981f-567c2abb1f5d", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/d4110165-1a7c-4168-80f2-1e4e020228ca", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/2e4ffa43-da25-4dc1-bdb7-c22780355662", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/8570651c-4141-49ee-8250-8972660d08a5", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/1bbd90ad-3b86-4f4e-99a4-3befe13819c1", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/feef62fb-6cac-4c4f-97f4-adde1d01ff7b" },
+        "wildcard-tombola-pt": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/54251bb7-2db6-4bf0-a5ef-7924498820c1", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/5ddb85a2-1ffd-48c4-bd8d-ab51ddc3fccb", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/278e06a5-b5d0-4e5e-b6ed-6a2dab0c8047", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/bf85c614-5763-43a3-b332-d0f8e07deb88", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/ec05f804-621f-41e3-963f-a15649907f45", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/b1a134e4-ae13-40c0-857e-72bcce4bc7fc" },
+        "wildcard-tombola-se": { "INFRA": "", "OPSPLAY": "", "PLAY": "", "DEV": "", "STAGE": "", "LIVE": "" },
+        "wildcard-tombola-nl": { "INFRA": "", "OPSPLAY": "", "PLAY": "", "DEV": "", "STAGE": "", "LIVE": "" },
+        "wildcard-tombola-com": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/b8eecc28-bfca-4e58-a8b8-8c89b4653a45", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/d8f25ad7-6b64-4f87-9f97-7bceeec92643", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/eadafb9e-a9be-440c-b689-8ed87e613902", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/5ea6c86b-eff9-454d-acbe-811e866ea890", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/88c64072-8976-41af-9b49-092c370f7033", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/182dae2f-6d7f-4d9d-b633-5175a14949b8" },
+        "wildcard-arcade-uk": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/b16e9141-7263-4c4c-93fc-66d96f7f2a64", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/40eca684-4611-46f4-b1cf-b7d1a0dbce97", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/86b4b2be-b208-4c87-89b9-c79d47efce95", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/c5295396-0a74-4bd4-a752-b34fe4deb91e", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/67f1bcf6-a1d4-45a8-878c-aeec8a3d066a", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/b76b8ab1-8bc5-47d9-9a24-ca50e5d332a4" }
+      },
+      "AccountVariables":
+      {
+        "160821142532":
+        {
+          "Environment": "INFRA",
+          "EnvironmentCode": "PR",
+          "OctopusEnvironment": "DeployToEMEA",
+          "VpcId": "vpc-e7d19182",
+          "PrivateSubnetA": "subnet-bc2d18d9",
+          "PrivateSubnetB": "subnet-d47e23a3",
+          "PublicSubnetA": "subnet-d52d18b0",
+          "PublicSubnetB": "subnet-ee7e2399",
+          "AdminSecurityGroup": "sg-f5bbfb8c"
+        },
+        "075458894664":
+        {
+          "Environment": "DEV",
+          "EnvironmentCode": "DV",
+          "OctopusEnvironment": "DeployToDev",
+          "VpcId": "vpc-70226d15",
+          "PrivateSubnetA": "subnet-70184107",
+          "PrivateSubnetB": "subnet-4ebfce17",
+          "PublicSubnetA": "subnet-71184106",
+          "PublicSubnetB": "subnet-41bfce18",
+          "AdminSecurityGroup": "sg-29d16550"
+        },
+        "094345010951":
+        {
+          "Environment": "STAGE",
+          "EnvironmentCode": "ST",
+          "OctopusEnvironment": "DeployToStaging",
+          "VpcId": "vpc-3bace55e",
+          "PrivateSubnetA": "subnet-9f2279e8",
+          "PrivateSubnetB": "subnet-edfb88b4",
+          "PublicSubnetA": "subnet-902279e7",
+          "PublicSubnetB": "subnet-e98efdb0",
+          "AdminSecurityGroup": "sg-ee7cf097"
+        },
+        "189470795347":
+        {
+          "Environment": "LIVE",
+          "EnvironmentCode": "PR",
+          "OctopusEnvironment": "DeployToLive",
+          "VpcId": "vpc-2aea414f",
+          "PrivateSubnetA": "subnet-2a3a164f",
+          "PrivateSubnetB": "subnet-3796c240",
+          "PublicSubnetA": "subnet-066a2663",
+          "PublicSubnetB": "subnet-1ea42869",
+          "AdminSecurityGroup": "sg-1c30aa65"
+        },
+        "630702119774":
+        {
+          "Environment": "PLAY",
+          "EnvironmentCode": "PLY",
+          "OctopusEnvironment": "DeployToPreDev",
+          "VpcId": "vpc-1353a174",
+          "PrivateSubnetA": "subnet-83cff7db",
+          "PrivateSubnetB": "subnet-f36d9194",
+          "PublicSubnetA": "subnet-64c3fb3c",
+          "PublicSubnetB": "subnet-4b728e2c",
+          "AdminSecurityGroup": "sg-65413d1c"
+        },
+        "843352679768":
+        {
+          "Environment": "OPSPLAY",
+          "EnvironmentCode": "OPG",
+          "OctopusEnvironment": "OpsPlayground",
+          "VpcId": "vpc-b35ee0d4",
+          "PrivateSubnetA": "subnet-e1d169a8",
+          "PrivateSubnetB": "subnet-4ebb4415",
+          "PublicSubnetA": "subnet-74d46c3d",
+          "PublicSubnetB": "subnet-6cba4537",
+          "AdminSecurityGroup": "sg-9c8234e4"
+        }
+      }
+    },
+    "Resources": {
+        "BASELAUNCHCONFIG": {
+            "Type" : "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "KeyName": "EC2Connect",
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": ["", [
+                                "# Version: 1.0\n",
+                                "<powershell>", "\n",
+                                "if((Test-Path \"C:\\Assets\") -ne $true) {", "\n",
+                                "   New-Item -Path \"C:\\Assets\" -ItemType \"directory\"", "\n",
+                                "}", "\n",
+                                "Copy-S3Object -SourceBucket tom-filerepo-pr -SourceKey Tombola/AWS/BuildMeScripts/JoinDC/KickStart.ps1 C:\\Assets\\KickStart.ps1", "\n",
+                                "& C:\\Assets\\KickStart.ps1"," -Environment ", { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "EnvironmentCode" ] }, " >> C:\\Assets\\KickStart.log", "\n",
+                                "</powershell>", "\n"
+                            ]
+                        ]
+                    }
+                },
+                "IamInstanceProfile": "Software",
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": {
+                  "Ref": "AMI"
+                },
+                "SecurityGroups": [ { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "AdminSecurityGroup" ] } ]
+            }
+        },
+        "BASEELB" : {
+            "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+            "Properties" : {
+                "Subnets": [ { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "PublicSubnetA" ] }, { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "PublicSubnetB" ] } ],
+                "SecurityGroups": { "Ref": "SecurityGroups" },
+                "Listeners": [
+                    {
+                      "LoadBalancerPort": { "Ref": "LoadBalancerPort" },
+                      "InstancePort": { "Ref": "InstancePort" },
+                      "Protocol": "HTTPS",
+                      "InstanceProtocol": "HTTP",
+                      "PolicyNames" : [ "StickinessPolicy" ],
+                      "SSLCertificateId": { "Fn::FindInMap": [ "SSLCertificateToCode", { "Ref": "SSLCertificate" }, { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "Environment" ] } ] }
+                    }
+                ],
+                "Policies" : [
+                  {
+                      "PolicyName" : "StickinessPolicy",
+                      "PolicyType" : "AppCookieStickinessPolicyType",
+                      "Attributes" : [ { "Name" : "CookieName", "Value" : "TombolaCookie" } ]
+                  }
+                ],
+                "LoadBalancerName": { "Fn::Join": ["", [ { "Ref": "Country" }, { "Ref": "InstanceName" }, "C", { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "EnvironmentCode" ] }, "-ELB" ] ] },
+                "ConnectionDrainingPolicy": {
+                  "Enabled" : "true",
+                  "Timeout" : { "Ref": "ConnectionDrainingTimeout" }
+                },
+		            "Tags": [
+                  { "Key": "Country", "Value" : { "Ref": "Country" } },
+                  { "Key": "Environment", "Value" : { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "Environment" ] } },
+                  { "Key": "Division", "Value": { "Ref": "Division" } },
+                  { "Key": "Team-Role", "Value": { "Fn::Join": [ "-", [ { "Ref": "Team" }, { "Ref": "Role" } ] ] } },
+                  { "Key": "Source", "Value": "Service Catalog" }
+                ]
+            }
+        },
+        "BASEASG": {
+            "Type" : "AWS::AutoScaling::AutoScalingGroup",
+            "Properties" : {
+                "LaunchConfigurationName" : { "Ref" : "BASELAUNCHCONFIG" },
+                "MinSize" : { "Ref": "MinSize" },
+                "MaxSize" : { "Ref": "MaxSize" },
+                "LoadBalancerNames" : [ { "Ref" : "BASEELB" } ],
+                "VPCZoneIdentifier": [ { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "PrivateSubnetA" ] }, { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "PrivateSubnetB" ] } ],
+                "Tags": [
+                    { "Key": "Name", "Value" : { "Fn::Join": ["", [ { "Ref": "Country" }, { "Ref": "InstanceName" }, "C", { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "EnvironmentCode" ] } ] ] }, "PropagateAtLaunch": "true" },
+                    { "Key": "Country", "Value" : { "Ref": "Country" }, "PropagateAtLaunch": "true" },
+                    { "Key": "Environment", "Value" : { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "Environment" ] }, "PropagateAtLaunch": "true" },
+                    { "Key": "Division", "Value": { "Ref": "Division" }, "PropagateAtLaunch": "true" },
+                    { "Key": "Team-Role", "Value": { "Fn::Join": [ "-", [ { "Ref": "Team" }, { "Ref": "Role" } ] ] }, "PropagateAtLaunch": "true" },
+                    { "Key": "Octopus.Role", "Value" : { "Ref": "OctopusRoles" }, "PropagateAtLaunch": "true" },
+                    { "Key": "Octopus.Environment", "Value" : { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "OctopusEnvironment" ] }, "PropagateAtLaunch": "true" },
+                    { "Key": "Source", "Value": "Service Catalog", "PropagateAtLaunch": "true" }
+                ]
+            }
+        },
+        "ScalingUpPolicy": {
+           "Type" : "AWS::AutoScaling::ScalingPolicy",
+           "Properties" : {
+              "AdjustmentType": "ChangeInCapacity",
+              "AutoScalingGroupName": { "Ref": "BASEASG" },
+              "Cooldown": 600,
+              "ScalingAdjustment" : 1
+           }
+        },
+        "ScalingDownPolicy": {
+           "Type" : "AWS::AutoScaling::ScalingPolicy",
+           "Properties" : {
+              "AdjustmentType": "ChangeInCapacity",
+              "AutoScalingGroupName": { "Ref": "BASEASG" },
+              "Cooldown": 600,
+              "ScalingAdjustment" : -1
+           }
+        },
+        "CPUAlarmHigh": {
+         "Type": "AWS::CloudWatch::Alarm",
+         "Properties": {
+            "AlarmDescription": "Scale-up if CPU > 80% for 5 minutes",
+            "MetricName": "CPUUtilization",
+            "Namespace": "AWS/EC2",
+            "Statistic": "Average",
+            "Period": "300",
+            "EvaluationPeriods": "1",
+            "Threshold": { "Ref": "ScalingUpThreshold" },
+            "AlarmActions": [ { "Ref": "ScalingUpPolicy" } ],
+            "Dimensions": [
+              {
+                "Name": "AutoScalingGroupName",
+                "Value": { "Ref": "BASEASG" }
+              }
+            ],
+            "ComparisonOperator": "GreaterThanThreshold"
+          }
+        },
+        "CPUAlarmLow": {
+         "Type": "AWS::CloudWatch::Alarm",
+         "Properties": {
+            "AlarmDescription": "Scale-down if CPU < 30% for 5 minutes",
+            "MetricName": "CPUUtilization",
+            "Namespace": "AWS/EC2",
+            "Statistic": "Average",
+            "Period": "300",
+            "EvaluationPeriods": "1",
+            "Threshold": { "Ref": "ScalingDownThreshold" },
+            "AlarmActions": [ { "Ref": "ScalingDownPolicy" } ],
+            "Dimensions": [
+              {
+                "Name": "AutoScalingGroupName",
+                "Value": { "Ref": "BASEASG" }
+              }
+            ],
+            "ComparisonOperator": "LessThanThreshold"
+          }
+        }
+    },
+    "Outputs": {
+      "ELBDNSName": {
+          "Description": "The DNS name for the ELB.",
+          "Value": { "Fn::GetAtt": [ "BASEELB", "DNSName" ] },
+          "Export": {
+             "Name": { "Fn::Join": [ ":", [ { "Ref": "AWS::StackName" }, "ELBDNSName" ] ] }
+          }
+      }
+    }
+}

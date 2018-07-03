@@ -1,0 +1,255 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Basic S3 bucket enabled with access from this account and Ops.
+Parameters:
+  BucketName:
+    Description: >-
+      Name of the S3 bucket to create, this should be unique and lowercase. Will
+      be prefixed by tom- and suffixed by the environment code.
+    Type: String
+    Default: ''
+  Division:
+    Description: The division that will be consuming/is provisioning this service.
+    Type: String
+    AllowedValues:
+      - Core
+      - Arcade
+      - Bingo
+      - International
+  Team:
+    Description: The team that will be primarily consuming/is provisioning this service.
+    Type: String
+    AllowedValues:
+      - Client
+      - Engine
+      - Platform
+      - ISA
+      - Infra
+      - Data Engineering
+  Role:
+    Description: The role this service will be helping to complete.
+    Type: String
+    AllowedValues:
+      - Build and Deployment
+      - Chat
+      - Data
+      - DB
+      - Game
+      - Infrastructure
+      - Reporting
+      - Testing
+      - VPN
+      - Web
+      - Website Misc
+  Country:
+    Description: >-
+      The country that will be primarily consuming/is provisioning this service
+      or EU for all.
+    Type: String
+    AllowedValues:
+      - ES
+      - EU
+      - IT
+      - PT
+      - UK
+  ChangeNo:
+    Description: >-
+      A change number or JIRA ticket that records the authorisation for the
+      stack to be built or the feature request this stack is part of.
+    Type: String
+Metadata:
+  ProductName: Basic S3 Bucket
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Bucket Settings
+        Parameters:
+          - BucketName
+      - Label:
+          default: Misc Details
+        Parameters:
+          - Division
+          - Team
+          - Role
+          - Country
+          - ChangeNo
+    ParameterLabels:
+      BucketName:
+        default: Bucket Name
+      ChangeNo:
+        default: Change Number
+Mappings:
+  EnvironmentCodeToLowerCase:
+    PR:
+      Value: pr
+    DV:
+      Value: dv
+    ST:
+      Value: st
+    PLY:
+      Value: ply
+    OPG:
+      Value: opg
+  AccountVariables:
+    '160821142532':
+      Environment: INFRA
+      EnvironmentCode: PR
+      OctopusEnvironment: DeployToEMEA
+      VpcId: vpc-e7d19182
+      PrivateSubnetA: subnet-bc2d18d9
+      PrivateSubnetB: subnet-d47e23a3
+      PublicSubnetA: subnet-d52d18b0
+      PublicSubnetB: subnet-ee7e2399
+      AdminSecurityGroup: sg-f5bbfb8c
+    075458894664:
+      Environment: DEV
+      EnvironmentCode: DV
+      OctopusEnvironment: DeployToDev
+      VpcId: vpc-70226d15
+      PrivateSubnetA: subnet-70184107
+      PrivateSubnetB: subnet-4ebfce17
+      PublicSubnetA: subnet-71184106
+      PublicSubnetB: subnet-41bfce18
+      AdminSecurityGroup: sg-29d16550
+    094345010951:
+      Environment: STAGE
+      EnvironmentCode: ST
+      OctopusEnvironment: DeployToStaging
+      VpcId: vpc-3bace55e
+      PrivateSubnetA: subnet-9f2279e8
+      PrivateSubnetB: subnet-edfb88b4
+      PublicSubnetA: subnet-902279e7
+      PublicSubnetB: subnet-e98efdb0
+      AdminSecurityGroup: sg-ee7cf097
+    '189470795347':
+      Environment: LIVE
+      EnvironmentCode: PR
+      OctopusEnvironment: DeployToLive
+      VpcId: vpc-2aea414f
+      PrivateSubnetA: subnet-2a3a164f
+      PrivateSubnetB: subnet-3796c240
+      PublicSubnetA: subnet-066a2663
+      PublicSubnetB: subnet-1ea42869
+      AdminSecurityGroup: sg-1c30aa65
+    '630702119774':
+      Environment: PLAY
+      EnvironmentCode: PLY
+      OctopusEnvironment: DeployToPreDev
+      VpcId: vpc-1353a174
+      PrivateSubnetA: subnet-83cff7db
+      PrivateSubnetB: subnet-f36d9194
+      PublicSubnetA: subnet-64c3fb3c
+      PublicSubnetB: subnet-4b728e2c
+      AdminSecurityGroup: sg-65413d1c
+    '843352679768':
+      Environment: OPSPLAY
+      EnvironmentCode: OPG
+      OctopusEnvironment: OpsPlayground
+      VpcId: vpc-b35ee0d4
+      PrivateSubnetA: subnet-e1d169a8
+      PrivateSubnetB: subnet-4ebb4415
+      PublicSubnetA: subnet-74d46c3d
+      PublicSubnetB: subnet-6cba4537
+      AdminSecurityGroup: sg-9c8234e4
+Resources:
+  BUCKET:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: Private
+      BucketName: !Join
+        - '-'
+        - - tom
+          - !Ref BucketName
+          - !FindInMap
+            - EnvironmentCodeToLowerCase
+            - !FindInMap
+              - AccountVariables
+              - !Ref 'AWS::AccountId'
+              - EnvironmentCode
+            - Value
+      Tags:
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !FindInMap
+            - AccountVariables
+            - !Ref 'AWS::AccountId'
+            - Environment
+        - Key: Division
+          Value: !Ref Division
+        - Key: Team-Role
+          Value: !Join
+            - '-'
+            - - !Ref Team
+              - !Ref Role
+        - Key: Source
+          Value: Service Catalog
+      VersioningConfiguration:
+        Status: Suspended
+  BUCKETPOLICY:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref BUCKET
+      PolicyDocument:
+        Statement:
+          - Sid: Allow Ops Access
+            Effect: Allow
+            Principal:
+              AWS: 'arn:aws:iam::160821142532:root'
+            Action:
+              - 's3:List*'
+              - 's3:Get*'
+              - 's3:Delete*'
+              - 's3:Put*'
+            Resource:
+              - !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref BUCKET
+              - !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref BUCKET
+                  - /*
+          - Sid: Allow Local Access
+            Effect: Allow
+            Principal:
+              AWS: !Join
+                - ''
+                - - 'arn:aws:iam::'
+                  - !Ref 'AWS::AccountId'
+                  - ':root'
+            Action:
+              - 's3:List*'
+              - 's3:Get*'
+              - 's3:Delete*'
+              - 's3:Put*'
+            Resource:
+              - !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref BUCKET
+              - !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref BUCKET
+                  - /*
+Outputs:
+  BUCKET:
+    Description: The Bucket name.
+    Value: !Ref BUCKET
+    Export:
+      Name: !Join
+        - ':'
+        - - !Ref 'AWS::StackName'
+          - BUCKET
+  BUCKETDomainName:
+    Description: The Domain Name for the Bucket.
+    Value: !GetAtt
+      - BUCKET
+      - DomainName
+    Export:
+      Name: !Join
+        - ':'
+        - - !Ref 'AWS::StackName'
+          - BUCKETDomainName
+Rules: {}

@@ -1,0 +1,3915 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'This template deploys three Windows Server Failover Clustering (WSFC)
+  and SQL Server AlwaysOn Availability Group nodes. This template is intended to be
+  installed into an existing VPC that was built using the sample reference architecture
+  titled: "Implementing Active Directory Domain Services in the AWS Cloud" **WARNING**
+  This template creates Amazon EC2 Windows instance and related resources. You will
+  be billed for the AWS resources used if you create a stack from this template. QS(0003)'
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Network Configuration
+      Parameters:
+      - ThirdAZ
+      - VPCID
+      - PrivateSubnet1ID
+      - PrivateSubnet2ID
+      - PrivateSubnet3ID
+    - Label:
+        default: Amazon EC2 Configuration
+      Parameters:
+      - KeyPairName
+      - HostType
+      - DedicatedHostAMI
+    - Label:
+        default: Microsoft Active Directory Configuration
+      Parameters:
+      - DomainDNSName
+      - DomainNetBIOSName
+      - DomainAdminUser
+      - DomainAdminPassword
+      - DomainMemberSGID
+      - DomainMemberSGID2
+    - Label:
+        default: Microsoft SQL Server Configuration
+      Parameters:
+      - SqlLicenceKey
+      - SQLServerVersion
+      - SQLServiceAccount
+      - SQLServiceAccountPassword
+      - SQLLicenseProvided
+      - UKVolumeDSize
+      - UKVolumeESize
+      - UKVolumeFSize
+      - UKVolumeGSize
+      - UKVolumeHSize
+      - UKVolumeISize
+      - UKVolumeJSize
+      - EUVolumeKSize
+      - EUVolumeLSize
+      - EUVolumeMSize
+      - EUVolumeNSize
+      - EUVolumeOSize
+      - EUVolumePSize
+      - EUVolumeQSize
+    - Label:
+        default: Failover Cluster Configuration
+      Parameters:
+      - WSFCClusterName
+      - WSFCFileServerInstanceType
+      - WSFCFileServerNetBIOSName
+      - WSFCFileServerPrivateIP
+      - WSFCNode1InstanceType
+      - WSFCNode1NetBIOSName
+      - WSFCNode1PrivateIP1
+      - WSFCNode1PrivateIP2
+      - WSFCNode1PrivateIP3
+      - DedicatedHostIDNode1
+      - WSFCNode2InstanceType
+      - WSFCNode2NetBIOSName
+      - WSFCNode2PrivateIP1
+      - WSFCNode2PrivateIP2
+      - WSFCNode2PrivateIP3
+      - DedicatedHostIDNode2
+      - WSFCNode3InstanceType
+      - WSFCNode3NetBIOSName
+      - WSFCNode3PrivateIP1
+      - WSFCNode3PrivateIP2
+      - WSFCNode3PrivateIP3
+      - DedicatedHostIDNode3
+    - Label:
+        default: AWS Quick Start Configuration
+      Parameters:
+      - QSS3BucketName
+      - QSS3KeyPrefix
+    ParameterLabels:
+      DedicatedHostAMI:
+        default: BYOL AMI to Use on Dedicated Host
+      DedicatedHostIDNode1:
+        default: Dedicated HostID for Node 1 (requires Tenancy set to "Dedicated Host")
+      DedicatedHostIDNode2:
+        default: Dedicated HostID for Node 2 (requires Tenancy set to "Dedicated Host")
+      DedicatedHostIDNode3:
+        default: Dedicated HostID for Node 3 (requires Tenancy set to "Dedicated Host")
+      DomainAdminPassword:
+        default: Domain Admin Password
+      DomainAdminUser:
+        default: Domain Admin User Name
+      DomainDNSName:
+        default: Domain DNS Name
+      DomainMemberSGID:
+        default: Security Group ID for AD Domain Members
+      DomainMemberSGID2:
+        default: Security Group 2 ID for AD Domain Members
+      DomainNetBIOSName:
+        default: Domain NetBIOS Name
+      HostType:
+        default: Tenancy
+      KeyPairName:
+        default: Key Pair Name
+      PrivateSubnet1ID:
+        default: Private Subnet 1 ID
+      PrivateSubnet2ID:
+        default: Private Subnet 2 ID
+      PrivateSubnet3ID:
+        default: Private Subnet 3 ID
+      QSS3BucketName:
+        default: Quick Start S3 Bucket Name
+      QSS3KeyPrefix:
+        default: Quick Start S3 Key Prefix
+      SQLLicenseProvided:
+        default: Amazon-Provided SQL Server License
+      SQLServerVersion:
+        default: SQL Server Version
+      SQLServiceAccount:
+        default: Service Account Name
+      SQLServiceAccountPassword:
+        default: Service Account Password
+      ThirdAZ:
+        default: Third AZ
+      UKVolumeDSize:
+        default: UK Backup Volume Size
+      UKVolumeESize:
+        default: UK Data Volume Size
+      UKVolumeFSize:
+        default: UK Logs Volume Size
+      UKVolumeGSize:
+        default: UK System DB Volume Size
+      UKVolumeHSize:
+        default: UK Arcade Data Volume Size
+      UKVolumeISize:
+        default: UK TempDB Volume Size
+      UKVolumeJSize:
+        default: UK Arcade Logs Volume Size
+      EUVolumeKSize:
+        default: EU Backup Volume Size
+      EUVolumeLSize:
+        default: EU Data Volume Size
+      EUVolumeMSize:
+        default: EU Logs Volume Size
+      EUVolumeNSize:
+        default: EU System DB Volume Size
+      EUVolumeOSize:
+        default: EU Arcade Data Volume Size
+      EUVolumePSize:
+        default: EU TempDB Volume Size
+      EUVolumeQSize:
+        default: EU TempDB Volume Size
+      VPCID:
+        default: VPC ID
+      WSFCClusterName:
+        default: WSFC Cluster Name
+      WSFCFileServerInstanceType:
+        default: File Server Instance Type
+      WSFCFileServerNetBIOSName:
+        default: File Server NetBIOS Name
+      WSFCFileServerPrivateIP:
+        default: File Server Private IP Address
+      WSFCNode1InstanceType:
+        default: Instance Type for Cluster Node 1
+      WSFCNode1NetBIOSName:
+        default: Cluster Node 1 NetBIOS Name
+      WSFCNode1PrivateIP1:
+        default: Cluster Node 1 Private IP Address 1
+      WSFCNode1PrivateIP2:
+        default: Cluster Node 1 Private IP Address 2
+      WSFCNode1PrivateIP3:
+        default: Cluster Node 1 Private IP Address 3
+      WSFCNode2InstanceType:
+        default: Instance Type for Cluster Node 2
+      WSFCNode2NetBIOSName:
+        default: Cluster Node 2 NetBIOS Name
+      WSFCNode2PrivateIP1:
+        default: Cluster Node 2 Private IP Address 1
+      WSFCNode2PrivateIP2:
+        default: Cluster Node 2 Private IP Address 2
+      WSFCNode2PrivateIP3:
+        default: Cluster Node 2 Private IP Address 3
+      WSFCNode3InstanceType:
+        default: Instance Type for Cluster Node 3
+      WSFCNode3NetBIOSName:
+        default: Cluster Node 3 NetBIOS Name
+      WSFCNode3PrivateIP1:
+        default: Cluster Node 3 Private IP Address 1
+      WSFCNode3PrivateIP2:
+        default: Cluster Node 3 Private IP Address 2
+      WSFCNode3PrivateIP3:
+        default: Cluster Node 3 Private IP Address 3
+Parameters:
+  DedicatedHostAMI:
+    Default: ''
+    Description: If host type is set to "Dedicated" or "Dedicated Host", you need
+      to specify your imported BYOL AMI id
+    Type: String
+  SqlLicenceKey:
+    Default: TBR8B-BXC4Y-298NV-PYTBY-G3BCP
+    Description: Sql license key required to install additional instances
+    Type: String
+  DedicatedHostIDNode1:
+    Default: ''
+    Description: Dedicated HostID for Node1, Only used if HostType is set to "host"
+    Type: String
+  DedicatedHostIDNode2:
+    Default: ''
+    Description: Dedicated HostID for Node2, Only used if HostType is set to "host"
+    Type: String
+  DedicatedHostIDNode3:
+    Default: ''
+    Description: Dedicated HostID for the optional Node3, Only used if HostType is
+      set to "host"
+    Type: String
+  DomainAdminPassword:
+    AllowedPattern: "(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*"
+    Default: qyylkjkjljlhr766ffqhde@
+    Description: Password for the domain admin user. Must be at least 8 characters
+      containing letters, numbers and symbols
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+  DomainAdminUser:
+    AllowedPattern: "[a-zA-Z0-9]*"
+    Default: WSFCAdmin
+    Description: User name for the account that will be used as Domain Administrator.
+      This is separate from the default "Administrator" account
+    MaxLength: '25'
+    MinLength: '5'
+    Type: String
+  DomainDNSName:
+    AllowedPattern: "[a-zA-Z0-9\\-]+\\..+"
+    Default: TOMBOLA.EMEA
+    Description: Fully qualified domain name (FQDN) e.g. example.com
+    MaxLength: '25'
+    MinLength: '3'
+    Type: String
+  DomainMemberSGID:
+    Description: ID of the Domain Member Security Group (e.g., sg-7f16e910)
+    Type: AWS::EC2::SecurityGroup::Id
+  DomainMemberSGID2:
+    Description: ID 2 of the Domain Member Security Group (e.g., sg-7f16e910)
+    Type: AWS::EC2::SecurityGroup::Id
+  DomainNetBIOSName:
+    AllowedPattern: "[a-zA-Z0-9\\-]+"
+    Default: TOMBOLAEMEA
+    Description: NetBIOS name of the domain (up to 15 characters) for users of earlier
+      versions of Windows e.g. EXAMPLE
+    MaxLength: '15'
+    MinLength: '1'
+    Type: String
+  HostType:
+    AllowedValues:
+    - Shared
+    - Dedicated
+    - Dedicated Host
+    Default: Shared
+    Description: 'Host Type, NB: For dedicated types, you must already have suitable
+      dedicated hosts in your account'
+    Type: String
+  KeyPairName:
+    Default: EC2Connect
+    Description: Public/private key pairs allow you to securely connect to your instance
+      after it launches
+    Type: AWS::EC2::KeyPair::KeyName
+  PrivateSubnet1ID:
+    Description: ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-a0246dcd)
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet2ID:
+    Description: ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-a0246dcd)
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet3ID:
+    Description: "(Optional) ID of the optional private subnet 3 in Availability Zone
+      3 (e.g., subnet-a0246dcd)"
+    Type: AWS::EC2::Subnet::Id
+  QSS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).
+    Default: S3-eu-west-1
+    Description: S3 bucket name for the Quick Start assets. Quick Start bucket name
+      can include numbers, lowercase letters, uppercase letters, and hyphens (-).
+      It cannot start or end with a hyphen (-).
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-/]*$"
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slash (/).
+    Default: wsfc-poc/
+    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
+      can include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/).
+    Type: String
+  SQLLicenseProvided:
+    AllowedValues:
+    - 'yes'
+    - 'no'
+    Default: 'yes'
+    Description: License SQL Server from AWS Marketplace
+    Type: String
+  SQLServerVersion:
+    AllowedValues:
+    - '2017'
+    - '2016'
+    - '2014'
+    Default: '2016'
+    Description: Version of SQL Server to install on Failover Cluster Nodes
+    Type: String
+  SQLServiceAccount:
+    AllowedPattern: "[a-zA-Z0-9]*"
+    Default: svcsql
+    Description: User name for the SQL Server Service Account. This Account is a Domain
+      User.
+    MaxLength: '25'
+    MinLength: '5'
+    Type: String
+  SQLServiceAccountPassword:
+    AllowedPattern: "(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*"
+    Default: 5*Fc2tRcU$giU$
+    Description: Password for the SQL Service account. Must be at least 8 characters
+      containing letters, numbers and symbols
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+  ThirdAZ:
+    AllowedValues:
+    - 'no'
+    - witness
+    - full
+    Default: full
+    Description: Enable a 3 AZ deployment, the 3rd AZ can either be used just for
+      the witness, or can be a full SQL cluster node.
+    Type: String
+  UKVolumeDSize:
+    Default: '4000'
+    Description: Volume size for the UK Backup drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  UKVolumeESize:
+    Default: '6000'
+    Description: Volume size for the UK SQL Data drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  UKVolumeFSize:
+    Default: '1000'
+    Description: Volume size for the UK SQL Logs drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  UKVolumeGSize:
+    Default: '200'
+    Description: Volume size for the UK SQL System DB drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  UKVolumeHSize:
+    Default: '2000'
+    Description: Volume size for the UK SQL Arcade Data drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  UKVolumeISize:
+    Default: '1000'
+    Description: Volume size for the UK TempDB Data drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  UKVolumeJSize:
+    Default: '500'
+    Description: Volume size for the UK Arcade Logs drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  EUVolumeKSize:
+    Default: '4000'
+    Description: Volume size for the EU Backup drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  EUVolumeLSize:
+    Default: '6000'
+    Description: Volume size for the EU Data drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  EUVolumeMSize:
+    Default: '1000'
+    Description: Volume size for the EU Logs drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  EUVolumeNSize:
+    Default: '200'
+    Description: Volume size for the EU System DB drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  EUVolumeOSize:
+    Default: '2000'
+    Description: Volume size for the EU Arcade Data drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  EUVolumePSize:
+    Default: '1000'
+    Description: Volume size for the EU TempDB drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  EUVolumeQSize:
+    Default: '1000'
+    Description: Volume size for the EU Arcade Logs drive, in GiB
+    MaxValue: '16000'
+    MinValue: '100'
+    Type: Number
+  VPCID:
+    Description: ID of the VPC (e.g., vpc-0343606e)
+    Type: AWS::EC2::VPC::Id
+  WSFCClusterName:
+    AllowedPattern: "[a-zA-Z0-9\\-]+"
+    Default: EUWSFCCPR-01
+    Description: Name of the WSFC Cluster (up to 15 characters)
+    MaxLength: '15'
+    MinLength: '1'
+    Type: String
+  WSFCFileServerInstanceType:
+    Default: t2.small
+    Description: Amazon EC2 instance type for a fileserver used to share install media,
+      witness and replication folders
+    Type: String
+  WSFCFileServerNetBIOSName:
+    AllowedPattern: "[a-zA-Z0-9\\-]+"
+    Default: EUWSFCFLECPR-01
+    Description: NetBIOS name of the WSFCFileServer (up to 15 characters)
+    MaxLength: '15'
+    MinLength: '1'
+    Type: String
+  WSFCFileServerPrivateIP:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    Default: 192.168.226.50
+    Description: Primary private IP for the fileserver located in Availability Zone
+      1
+    Type: String
+  WSFCNode1InstanceType:
+    AllowedValues:
+    - r4.xlarge
+    - r4.2xlarge
+    - r4.4xlarge
+    - r4.8xlarge
+    ConstraintDescription: Only EBS Optimized instance types r4.xlarge, r4.2xlarge,
+      r4.4xlarge, r4.8xlarge allowed
+    Default: r4.xlarge
+    Description: Amazon EC2 instance type for the first WSFC Node
+    Type: String
+  WSFCNode1NetBIOSName:
+    AllowedPattern: "[a-zA-Z0-9\\-]+"
+    Default: EUSQLWSFCCPR-01
+    Description: NetBIOS name of the first WSFC Node (up to 15 characters)
+    MaxLength: '15'
+    MinLength: '1'
+    Type: String
+  WSFCNode1PrivateIP1:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    Default: 192.168.226.53
+    Description: Primary private IP for the first WSFC Node located in Availability
+      Zone 1
+    Type: String
+  WSFCNode1PrivateIP2:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    Default: 192.168.226.54
+    Description: Secondary private IP for WSFC cluster on first WSFC Node
+    Type: String
+  WSFCNode1PrivateIP3:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    Default: 192.168.226.55
+    Description: Third private IP for Availability Group Listener on first WSFC Node
+    Type: String
+  WSFCNode2InstanceType:
+    AllowedValues:
+    - r4.xlarge
+    - r4.2xlarge
+    - r4.4xlarge
+    - r4.8xlarge
+    ConstraintDescription: Only EBS Optimized instance types r4.xlarge, r4.2xlarge,
+      r4.4xlarge, r4.8xlarge allowed
+    Default: r4.xlarge
+    Description: Amazon EC2 instance type for the second WSFC Node
+    Type: String
+  WSFCNode2NetBIOSName:
+    AllowedPattern: "[a-zA-Z0-9\\-]+"
+    Default: EUSQLWSFCCPR-02
+    Description: NetBIOS name of the second WSFC Node (up to 15 characters)
+    MaxLength: '15'
+    MinLength: '1'
+    Type: String
+  WSFCNode2PrivateIP1:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    Default: 192.168.227.53
+    Description: Primary private IP for the second WSFC Node located in Availability
+      Zone 2
+    Type: String
+  WSFCNode2PrivateIP2:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    Default: 192.168.227.54
+    Description: Secondary private IP for WSFC cluster on second WSFC Node
+    Type: String
+  WSFCNode2PrivateIP3:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    Default: 192.168.227.55
+    Description: Third private IP for Availability Group Listener on second WSFC Node
+    Type: String
+  WSFCNode3InstanceType:
+    AllowedValues:
+    - r4.xlarge
+    - r4.2xlarge
+    - r4.4xlarge
+    - r4.8xlarge
+    ConstraintDescription: Only EBS Optimized instance types r4.xlarge, r4.2xlarge,
+      r4.4xlarge, r4.8xlarge allowed
+    Default: r4.xlarge
+    Description: Amazon EC2 instance type for the third WSFC Node
+    Type: String
+  WSFCNode3NetBIOSName:
+    AllowedPattern: "[a-zA-Z0-9\\-]+"
+    Default: EUSQLWSFCCPR-03
+    Description: NetBIOS name of the third WSFC Node (up to 15 characters)
+    MaxLength: '15'
+    MinLength: '1'
+    Type: String
+  WSFCNode3PrivateIP1:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    Default: 192.168.229.51
+    Description: Primary private IP for the optional third WSFC Node located in Availability
+      Zone 3
+    Type: String
+  WSFCNode3PrivateIP2:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    Default: 192.168.229.52
+    Description: Secondary private IP for WSFC cluster on optional third WSFC Node
+    Type: String
+  WSFCNode3PrivateIP3:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    Default: 192.168.229.53
+    Description: Third private IP for Availability Group Listener on optional third
+      WSFC Node
+    Type: String
+Conditions:
+  IsThreeAz:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: ThirdAZ
+      - 'no'
+  ThirdAzIsWitness:
+    Fn::Equals:
+    - Ref: ThirdAZ
+    - witness
+  ThirdAzIsFullNode:
+    Fn::Equals:
+    - Ref: ThirdAZ
+    - full
+  IsTwoNode:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: ThirdAZ
+      - full
+  UKVolumeDIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - UKVolumeDType
+      - Default
+    - io1
+  UKVolumeEIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - UKVolumeEType
+      - Default
+    - io1
+  UKVolumeFIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - UKVolumeFType
+      - Default
+    - io1
+  UKVolumeGIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - UKVolumeGType
+      - Default
+    - io1
+  UKVolumeHIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - UKVolumeHType
+      - Default
+    - io1
+  UKVolumeIIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - UKVolumeIType
+      - Default
+    - io1
+  UKVolumeJIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - UKVolumeJType
+      - Default
+    - io1
+  EUVolumeKIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - EUVolumeKType
+      - Default
+    - io1
+  EUVolumeLIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - EUVolumeLType
+      - Default
+    - io1
+  EUVolumeMIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - EUVolumeMType
+      - Default
+    - io1
+  EUVolumeNIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - EUVolumeNType
+      - Default
+    - io1
+  EUVolumeOIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - EUVolumeOType
+      - Default
+    - io1
+  EUVolumePIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - EUVolumePType
+      - Default
+    - io1
+  EUVolumeQIsIo1:
+    Fn::Equals:
+    - Fn::FindInMap:
+      - VolumeMap
+      - EUVolumeQType
+      - Default
+    - io1
+  HostTypeIsDefault:
+    Fn::Equals:
+    - Ref: HostType
+    - Shared
+  HostTypeIsDediHost:
+    Fn::Equals:
+    - Ref: HostType
+    - Dedicated Host
+  ByolAmi:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: HostType
+      - Shared
+  SQLBakedInAMI:
+    Fn::Equals:
+    - Ref: SQLLicenseProvided
+    - 'yes'
+  WindowsServer2016:
+    Fn::Equals:
+    - Ref: SQLServerVersion
+    - '2017'
+  GovCloudCondition:
+    Fn::Equals:
+    - Ref: AWS::Region
+    - us-gov-west-1
+Rules:
+  SubnetsInVPC:
+    Assertions:
+    - Assert:
+        Fn::EachMemberIn:
+        - Fn::ValueOfAll:
+          - AWS::EC2::Subnet::Id
+          - VpcId
+        - Fn::RefAll: AWS::EC2::VPC::Id
+      AssertDescription: All subnets must in the VPC
+Mappings:
+  AWSAMIRegionMap:
+    AMI:
+      WS2012R2: Windows_Server-2012-R2_RTM-English-64Bit-Base-2018.01.12
+      WS2012R2SQL2014SP2ENT: Windows_Server-2012-R2_RTM-English-64Bit-SQL_2014_SP2_Enterprise-2018.01.12
+      WS2012R2SQL2016SP1ENT: Windows_Server-2012-R2_RTM-English-64Bit-SQL_2016_SP1_Enterprise-2018.01.12
+      WS2016FULLBASE: Windows_Server-2016-English-Full-Base-2018.01.12
+      WS2016FULLSQL2017ENT: Windows_Server-2016-English-Full-SQL_2017_Enterprise-2018.01.12
+    ap-northeast-1:
+      WS2012R2: ami-1a7ee47c
+      WS2012R2SQL2014SP2ENT: ami-7b2eb41d
+      WS2012R2SQL2016SP1ENT: ami-7975ef1f
+      WS2016FULLBASE: ami-157fe573
+      WS2016FULLSQL2017ENT: ami-04148e62
+    ap-northeast-2:
+      WS2012R2: ami-0b4eee65
+      WS2012R2SQL2014SP2ENT: ami-2b55f545
+      WS2012R2SQL2016SP1ENT: ami-ee4eee80
+      WS2016FULLBASE: ami-054eee6b
+      WS2016FULLSQL2017ENT: ami-7052f21e
+    ap-south-1:
+      WS2012R2: ami-c488dfab
+      WS2012R2SQL2014SP2ENT: ami-a6bcebc9
+      WS2012R2SQL2016SP1ENT: ami-89b5e2e6
+      WS2016FULLBASE: ami-ad8addc2
+      WS2016FULLSQL2017ENT: ami-5dbceb32
+    ap-southeast-1:
+      WS2012R2: ami-c83944b4
+      WS2012R2SQL2014SP2ENT: ami-0d097471
+      WS2012R2SQL2016SP1ENT: ami-4e2e5332
+      WS2016FULLBASE: ami-c23548be
+      WS2016FULLSQL2017ENT: ami-b51568c9
+    ap-southeast-2:
+      WS2012R2: ami-30a55952
+      WS2012R2SQL2014SP2ENT: ami-0d8d716f
+      WS2012R2SQL2016SP1ENT: ami-8d9c60ef
+      WS2016FULLBASE: ami-82a458e0
+      WS2016FULLSQL2017ENT: ami-40936f22
+    ca-central-1:
+      WS2012R2: ami-41ab2e25
+      WS2012R2SQL2014SP2ENT: ami-e2ab2e86
+      WS2012R2SQL2016SP1ENT: ami-03b73267
+      WS2016FULLBASE: ami-44b73220
+      WS2016FULLSQL2017ENT: ami-daab2ebe
+    eu-central-1:
+      WS2012R2: ami-3204995d
+      WS2012R2SQL2014SP2ENT: ami-1a31ac75
+      WS2012R2SQL2016SP1ENT: ami-1f3ca170
+      WS2016FULLBASE: ami-d90499b6
+      WS2016FULLSQL2017ENT: ami-f238a59d
+    eu-west-1:
+      WS2012R2: ami-cc821eb5
+      WS2012R2SQL2014SP2ENT: ami-c558c4bc
+      WS2012R2SQL2016SP1ENT: ami-aeac30d7
+      WS2016FULLBASE: ami-96b824ef
+      WS2016FULLSQL2017ENT: ami-dea63aa7
+    eu-west-2:
+      WS2012R2: ami-9f677cfb
+      WS2012R2SQL2014SP2ENT: ami-961803f2
+      WS2012R2SQL2016SP1ENT: ami-98647ffc
+      WS2016FULLBASE: ami-79607b1d
+      WS2016FULLSQL2017ENT: ami-a4647fc0
+    sa-east-1:
+      WS2012R2: ami-d6c785ba
+      WS2012R2SQL2014SP2ENT: ami-bdc98bd1
+      WS2012R2SQL2016SP1ENT: ami-2dc58741
+      WS2016FULLBASE: ami-1cc68470
+      WS2016FULLSQL2017ENT: ami-ebcf8d87
+    us-east-1:
+      WS2012R2: ami-013e197b
+      WS2012R2SQL2014SP2ENT: ami-f2f0d788
+      WS2012R2SQL2016SP1ENT: ami-fa113680
+      WS2016FULLBASE: ami-603b1c1a
+      WS2016FULLSQL2017ENT: ami-6b092e11
+    us-east-2:
+      WS2012R2: ami-02446e67
+      WS2012R2SQL2014SP2ENT: ami-27597342
+      WS2012R2SQL2016SP1ENT: ami-045a7061
+      WS2016FULLBASE: ami-05446e60
+      WS2016FULLSQL2017ENT: ami-6a5b710f
+    us-west-1:
+      WS2012R2: ami-92fefdf2
+      WS2012R2SQL2014SP2ENT: ami-a08586c0
+      WS2012R2SQL2016SP1ENT: ami-958182f5
+      WS2016FULLBASE: ami-33fefd53
+      WS2016FULLSQL2017ENT: ami-ad8784cd
+    us-west-2:
+      WS2012R2: ami-afe051d7
+      WS2012R2SQL2014SP2ENT: ami-04c9787c
+      WS2012R2SQL2016SP1ENT: ami-fdd26385
+      WS2016FULLBASE: ami-b2e756ca
+      WS2016FULLSQL2017ENT: ami-cede6fb6
+  SQLAMINameMap:
+    '2014':
+      'no': WS2012R2
+      'yes': WS2012R2SQL2014SP2ENT
+    '2016':
+      'no': WS2012R2
+      'yes': WS2012R2SQL2016SP1ENT
+    '2017':
+      'no': WS2016FULLBASE
+      'yes': WS2016FULLSQL2017ENT
+  VolumeMap:
+    UKVolumeDIops:
+      Default: '1000'
+      Description: Iops for the UK Backup drive (only used when volume type is io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    UKVolumeEIops:
+      Default: '1000'
+      Description: Iops for the UK SQL Data drive (only used when volume type is io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    UKVolumeFIops:
+      Default: '1000'
+      Description: Iops for the UK SQL Logs drive (only used when volume type is io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    UKVolumeGIops:
+      Default: '1000'
+      Description: Iops for the UK SQL System DB drive (only used when volume type
+        is io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    UKVolumeHIops:
+      Default: '1000'
+      Description: Iops for the UK SQL Arcade Data drive (only used when volume type
+        is io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    UKVolumeIIops:
+      Default: '1000'
+      Description: Iops for the UK TempDB drive (only used when volume type is io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    UKVolumeJIops:
+      Default: '1000'
+      Description: Iops for the UK Arcade Logs drive (only used when volume type is
+        io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    EUVolumeKIops:
+      Default: '1000'
+      Description: Iops for the EU Backup drive (only used when volume type is io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    EUVolumeLIops:
+      Default: '1000'
+      Description: Iops for the EU Data drive (only used when volume type is io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    EUVolumeMIops:
+      Default: '1000'
+      Description: Iops for the EU Logs drive (only used when volume type is io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    EUVolumeNIops:
+      Default: '1000'
+      Description: Iops for the EU System DB drive (only used when volume type is
+        io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    EUVolumeOIops:
+      Default: '1000'
+      Description: Iops for the EU Arcade Data drive (only used when volume type is
+        io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    EUVolumePIops:
+      Default: '1000'
+      Description: Iops for the EU TempDB drive (only used when volume type is io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    EUVolumeQIops:
+      Default: '1000'
+      Description: Iops for the EU Arcade Logs drive (only used when volume type is
+        io1)
+      MaxValue: '20000'
+      MinValue: '100'
+      Type: Number
+    UKVolumeDType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the UK Backup drive
+      Type: String
+    UKVolumeEType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the UK SQL Data drive
+      Type: String
+    UKVolumeFType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the UK SQL Logs drive
+      Type: String
+    UKVolumeGType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the UK SQL System DB drive
+      Type: String
+    UKVolumeHType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the UK SQL Arcade Data drive
+      Type: String
+    UKVolumeIType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the UK TempDB Data drive
+      Type: String
+    UKVolumeJType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the UK Arcade Logs drive
+      Type: String
+    EUVolumeKType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the EU Backup drive
+      Type: String
+    EUVolumeLType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the EU Data drive
+      Type: String
+    EUVolumeMType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the EU Logs drive
+      Type: String
+    EUVolumeNType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the EU System DB drive
+      Type: String
+    EUVolumeOType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the EU Arcade Data drive
+      Type: String
+    EUVolumePType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the EU TempDB drive
+      Type: String
+    EUVolumeQType:
+      AllowedValues:
+      - gp2
+      - io1
+      Default: gp2
+      Description: Volume type for the EU Arcade Logs drive
+      Type: String
+Resources:
+  WSFCRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Policies:
+      - PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Action:
+            - s3:GetObject
+            Resource:
+              Fn::Sub:
+              - arn:${Partition}:s3:::${QSS3BucketName}/${QSS3KeyPrefix}*
+              - Partition:
+                  Fn::If:
+                  - GovCloudCondition
+                  - aws-us-gov
+                  - aws
+            Effect: Allow
+        PolicyName: aws-quick-start-s3-policy
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Effect: Allow
+        Version: '2012-10-17'
+  WSFCProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+      - Ref: WSFCRole
+      Path: "/"
+  WSFCFileServerWaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    Condition: IsTwoNode
+    DependsOn: EUWSFCFLECPR01
+    Properties:
+      Handle:
+        Ref: WSFCFileServerWaitHandle
+      Timeout: '3600'
+  WSFCFileServerWaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  WSFCNode1WaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: EUSQLWSFCCPR01
+    Properties:
+      Handle:
+        Ref: WSFCNode1WaitHandle
+      Timeout: '9000'
+  WSFCNode1WaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  WSFCNode2WaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: EUSQLWSFCCPR02
+    Properties:
+      Handle:
+        Ref: WSFCNode2WaitHandle
+      Timeout: '10800'
+  WSFCNode2WaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  WSFCNode3WaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    Condition: ThirdAzIsFullNode
+    DependsOn: EUSQLWSFCCPR03
+    Properties:
+      Handle:
+        Ref: WSFCNode3WaitHandle
+      Timeout: '10800'
+  WSFCNode3WaitHandle:
+    Condition: ThirdAzIsFullNode
+    Type: AWS::CloudFormation::WaitConditionHandle
+  EUWSFCFLECPR01:
+    Type: AWS::EC2::Instance
+    Condition: IsTwoNode
+    Metadata:
+      AWS::CloudFormation::Authentication:
+        S3AccessCreds:
+          type: S3
+          roleName:
+            Ref: WSFCRole
+          buckets:
+          - Ref: QSS3BucketName
+      AWS::CloudFormation::Init:
+        configSets:
+          config:
+          - FetchResources
+          - QuickStartSetup
+          - Prep
+          - Cleanup
+          - Finalize
+        FetchResources:
+          files:
+            C:\cfn\scripts\Unzip-Archive.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Unzip-Archive.ps1
+            C:\cfn\modules\AWSQuickStart.zip:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/modules/AWSQuickStart.zip
+            C:\cfn\scripts\Join-Domain.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Join-Domain.ps1
+            C:\cfn\scripts\Rename-Computer.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Rename-Computer.ps1
+            C:\cfn\scripts\Enable-CredSSP.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Enable-CredSSP.ps1
+            C:\cfn\scripts\disable-weak-ciphers.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/disable-weak-ciphers.ps1
+            C:\cfn\scripts\windows-culture-gb.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/windows-culture-gb.ps1
+            C:\cfn\scripts\windows-enable-snmp.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/windows-enable-snmp.ps1
+            C:\cfn\scripts\Create-Share.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Create-Share.ps1
+            C:\cfn\scripts\Test-ADUser.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Test-ADUser.ps1
+            C:\cfn\scripts\AddUserToGroup.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/AddUserToGroup.ps1
+            C:\cfn\scripts\Disable-CredSSP.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Disable-CredSSP.ps1
+        QuickStartSetup:
+          commands:
+            a-set-execution-policy:
+              command: powershell.exe -Command "Set-ExecutionPolicy RemoteSigned -Force"
+              waitAfterCompletion: '0'
+            b-unpack-quickstart-module:
+              command: powershell.exe -Command C:\cfn\scripts\Unzip-Archive.ps1 -Source
+                C:\cfn\modules\AWSQuickStart.zip -Destination C:\Windows\system32\WindowsPowerShell\v1.0\Modules\
+              waitAfterCompletion: '0'
+            c-init-quickstart-module:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "
+                  - New-AWSQuickStartWaitHandle -Handle '
+                  - Ref: WSFCFileServerWaitHandle
+                  - '''"'
+              waitAfterCompletion: '0'
+        Prep:
+          commands:
+            a-rename-computer:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\Rename-Computer.ps1 -Restart
+                    -NewName '
+                  - Ref: WSFCFileServerNetBIOSName
+                  - '''"'
+              waitAfterCompletion: forever
+            b-join-domain:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\Join-Domain.ps1 -DomainName
+                    '
+                  - Ref: DomainDNSName
+                  - "' -UserName '"
+                  - Ref: DomainAdminUser
+                  - "@"
+                  - Ref: DomainDNSName
+                  - "' -Password '"
+                  - Ref: DomainAdminPassword
+                  - '''"'
+              waitAfterCompletion: forever
+            c-enable-credssp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\Enable-CredSSP.ps1
+              waitAfterCompletion: '0'
+            d-add-domadmin-user-to-group:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - " C:\\cfn\\scripts\\AddUserToGroup.ps1 -UserName '"
+                  - Ref: DomainAdminUser
+                  - "' -ServerName '"
+                  - Ref: WSFCFileServerNetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - ''' -GroupName ''Administrators''"'
+              waitAfterCompletion: '0'
+            e-wait-for-ad-replication:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - C:\cfn\scripts\Test-ADUser.ps1 -UserName '
+                  - Ref: SQLServiceAccount
+                  - ''' -Wait -TimeoutMinutes 30 -IntervalMinutes 1"'
+              waitAfterCompletion: '0'
+            f-add-sqlservice-user-to-group:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - C:\cfn\scripts\AddUserToGroup.ps1 -UserName '
+                  - Ref: SQLServiceAccount
+                  - "' -ServerName '"
+                  - Ref: WSFCFileServerNetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - ''' -GroupName ''Administrators''"'
+              waitAfterCompletion: '0'
+            g-disable-weak-ciphers:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\disable-weak-ciphers.ps1
+              waitAfterCompletion: '0'
+            h-windows-culture-gb:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\windows-culture-gb.ps1
+              waitAfterCompletion: '0'
+            i-windows-enable-snmp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\windows-enable-snmp.ps1
+              waitAfterCompletion: '0'
+        Cleanup:
+          commands:
+            a-disable-credssp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\Disable-CredSSP.ps1"
+              waitAfterCompletion: '0'
+        Finalize:
+          commands:
+            a-signal-success:
+              command: powershell -Command "Write-AWSQuickStartStatus"
+              waitAfterCompletion: '0'
+    Properties:
+      ImageId:
+        Fn::FindInMap:
+        - AWSAMIRegionMap
+        - Ref: AWS::Region
+        - WS2012R2
+      IamInstanceProfile:
+        Ref: WSFCProfile
+      InstanceType:
+        Ref: WSFCFileServerInstanceType
+      NetworkInterfaces:
+      - DeleteOnTermination: 'true'
+        DeviceIndex: 0
+        SubnetId:
+          Fn::If:
+          - ThirdAzIsWitness
+          - Ref: PrivateSubnet3ID
+          - Ref: PrivateSubnet1ID
+        PrivateIpAddresses:
+        - Primary: 'true'
+          PrivateIpAddress:
+            Ref: WSFCFileServerPrivateIP
+        GroupSet:
+        - Ref: DomainMemberSGID
+        - Ref: DomainMemberSGID2
+        - Ref: WSFCSecurityGroup
+        - Ref: WSFCClientSecurityGroup
+      Tags:
+      - Key: Name
+        Value:
+          Ref: WSFCFileServerNetBIOSName
+      - Key: Country
+        Value: EU
+      - Key: Division
+        Value: Core
+      - Key: Environment
+        Value: LIVE
+      - Key: Role
+        Value: SQL
+      - Key: Team
+        Value: Infra
+      - Key: Team-Role
+        Value: Infra-DB
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeSize: '100'
+          VolumeType: gp2
+      KeyName:
+        Ref: KeyPairName
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "<script>\n"
+            - 'cfn-init.exe -v -c config -s '
+            - Ref: AWS::StackId
+            - " -r EUWSFCFLECPR01"
+            - " --region "
+            - Ref: AWS::Region
+            - "\n"
+            - "</script>"
+  EUSQLWSFCCPR01:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Authentication:
+        S3AccessCreds:
+          type: S3
+          roleName:
+            Ref: WSFCRole
+          buckets:
+          - Ref: QSS3BucketName
+      AWS::CloudFormation::Init:
+        configSets:
+          config:
+          - FetchResources
+          - QuickStartSetup
+          - Prep
+          - Install
+          - InstallSQLCumulativeUpdate
+          - Cleanup
+          - Finalize
+        FetchResources:
+          files:
+            C:\cfn\scripts\Unzip-Archive.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Unzip-Archive.ps1
+            C:\cfn\modules\AWSQuickStart.zip:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/modules/AWSQuickStart.zip
+            C:\cfn\scripts\Join-Domain.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Join-Domain.ps1
+            C:\cfn\scripts\Rename-Computer.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Rename-Computer.ps1
+            C:\cfn\scripts\Restart-Computer.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Restart-Computer.ps1
+            C:\cfn\scripts\Install-WindowsFailoverClustering.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-WindowsFailoverClustering.ps1
+            C:\cfn\scripts\Install-NETFrameworkCore.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-NETFrameworkCore.ps1
+            C:\cfn\scripts\OpenWSFCPorts.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/OpenWSFCPorts.ps1
+            C:\cfn\scripts\Enable-CredSSP.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Enable-CredSSP.ps1
+            C:\cfn\scripts\disable-weak-ciphers.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/disable-weak-ciphers.ps1
+            C:\cfn\scripts\windows-culture-gb.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/windows-culture-gb.ps1
+            C:\cfn\scripts\windows-enable-snmp.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/windows-enable-snmp.ps1
+            C:\cfn\scripts\DownloadSQLEE.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/DownloadSQLEE.ps1
+            C:\cfn\scripts\Create-ADServiceAccount.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Create-ADServiceAccount.ps1
+            C:\cfn\scripts\Test-ADUser.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Test-ADUser.ps1
+            C:\cfn\scripts\AddUserToGroup.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/AddUserToGroup.ps1
+            C:\cfn\scripts\InstallSQLEE.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/InstallSQLEE.ps1
+            C:\cfn\scripts\DownloadSQLCumulativeUpdate.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/DownloadSQLCumulativeUpdate.ps1
+            C:\cfn\scripts\InstallSQLInstance.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/InstallSQLInstance.ps1
+            C:\cfn\scripts\RemapUKDriveLetters.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/RemapUKDriveLetters.ps1
+            C:\cfn\scripts\UninstallDefaultSQLInstance.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/UninstallDefaultSQLInstance.ps1
+            C:\cfn\scripts\Disable-CredSSP.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Disable-CredSSP.ps1
+        QuickStartSetup:
+          commands:
+            a-set-execution-policy:
+              command: powershell.exe -Command "Set-ExecutionPolicy RemoteSigned -Force"
+              waitAfterCompletion: '0'
+            b-unpack-quickstart-module:
+              command: powershell.exe -Command C:\cfn\scripts\Unzip-Archive.ps1 -Source
+                C:\cfn\modules\AWSQuickStart.zip -Destination C:\Windows\system32\WindowsPowerShell\v1.0\Modules\
+              waitAfterCompletion: '0'
+            c-init-quickstart-module:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "
+                  - New-AWSQuickStartWaitHandle -Handle '
+                  - Ref: WSFCNode1WaitHandle
+                  - '''"'
+              waitAfterCompletion: '0'
+        Prep:
+          commands:
+            a-initialize-disks:
+              command:
+                Fn::If:
+                - WindowsServer2016
+                - powershell.exe -Command "C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeDisks.ps1"
+                - powershell.exe -Command exit
+              waitAfterCompletion: '0'
+            b-rename-computer:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\Rename-Computer.ps1 -Restart
+                    -NewName '
+                  - Ref: WSFCNode1NetBIOSName
+                  - '''"'
+              waitAfterCompletion: forever
+            c-join-domain:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\Join-Domain.ps1 -DomainName
+                    '
+                  - Ref: DomainDNSName
+                  - "' -UserName '"
+                  - Ref: DomainAdminUser
+                  - "@"
+                  - Ref: DomainDNSName
+                  - "' -Password '"
+                  - Ref: DomainAdminPassword
+                  - '''"'
+              waitAfterCompletion: forever
+            d-install-net-framework-core:
+              command: powershell.exe -Command "C:\cfn\scripts\Install-NETFrameworkCore.ps1"
+              waitAfterCompletion: '0'
+            e-install-windows-failover-clustering:
+              command: powershell.exe -Command "C:\cfn\scripts\Install-WindowsFailoverClustering.ps1"
+              waitAfterCompletion: '0'
+            f-enable-credssp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\Enable-CredSSP.ps1
+              waitAfterCompletion: '0'
+            g-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+            h-open-WSFC-ports:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\OpenWSFCPorts.ps1"
+              waitAfterCompletion: '0'
+            i-create-sql-account:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\Create-ADServiceAccount.ps1
+                    -DomainDNSName '
+                  - Ref: DomainDNSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -ServiceAccountUser '"
+                  - Ref: SQLServiceAccount
+                  - "' -ServiceAccountPassword '"
+                  - Ref: SQLServiceAccountPassword
+                  - '''"'
+              waitAfterCompletion: '0'
+            j-add-domadmin-user-to-group:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - " C:\\cfn\\scripts\\AddUserToGroup.ps1 -UserName '"
+                  - Ref: DomainAdminUser
+                  - "' -ServerName '"
+                  - Ref: WSFCNode1NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - ''' -GroupName ''Administrators''"'
+              waitAfterCompletion: '0'
+            k-wait-for-ad-replication:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - C:\cfn\scripts\Test-ADUser.ps1 -UserName '
+                  - Ref: SQLServiceAccount
+                  - ''' -Wait -TimeoutMinutes 30 -IntervalMinutes 1"'
+              waitAfterCompletion: '0'
+            l-add-sqlservice-user-to-group:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - C:\cfn\scripts\AddUserToGroup.ps1 -UserName '
+                  - Ref: SQLServiceAccount
+                  - "' -ServerName '"
+                  - Ref: WSFCNode1NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - ''' -GroupName ''Administrators''"'
+              waitAfterCompletion: '0'
+            m-download-sql-installer:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - " C:\\cfn\\scripts\\DownloadSQLEE.ps1 -SQLServerVersion '"
+                  - Ref: SQLServerVersion
+                  - '''"'
+              waitAfterCompletion: '0'
+            n-disable-weak-ciphers:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\disable-weak-ciphers.ps1
+              waitAfterCompletion: '0'
+            o-windows-culture-gb:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\windows-culture-gb.ps1
+              waitAfterCompletion: '0'
+            p-windows-enable-snmp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\windows-enable-snmp.ps1
+              waitAfterCompletion: '0'
+        Install:
+          commands:
+            a-install-sql:
+              command:
+                Fn::If:
+                - SQLBakedInAMI
+                - powershell.exe -Command exit
+                - Fn::Join:
+                  - ''
+                  - - powershell.exe -Command "C:\cfn\scripts\InstallSQLEE.ps1 -DomainNetBIOSName
+                      '
+                    - Ref: DomainNetBIOSName
+                    - "' -DomainAdminUser '"
+                    - Ref: DomainAdminUser
+                    - "' -DomainAdminPassword '"
+                    - Ref: DomainAdminPassword
+                    - "' -SQLServiceAccount '"
+                    - Ref: SQLServiceAccount
+                    - "' -SQLServiceAccountPassword '"
+                    - Ref: SQLServiceAccountPassword
+                    - "' -NetBIOSName '"
+                    - Ref: WSFCNode1NetBIOSName
+                    - '''"'
+              waitAfterCompletion: '0'
+            b-uninstall-default-instance:
+              command: powershell.exe -Command "C:\cfn\scripts\UninstallDefaultSQLInstance.ps1
+              waitAfterCompletion: '0'
+            c-remap-driveletters:
+              command: powershell.exe -Command "C:\cfn\scripts\RemapUKDriveLetters.ps1
+              waitAfterCompletion: '0'
+            d-install-sql-instance:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\InstallSQLInstance.ps1
+                    -NetBIOSName '
+                  - Ref: WSFCNode1NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -SQLServiceAccount '"
+                  - Ref: SQLServiceAccount
+                  - "' -SQLServiceAccountPassword '"
+                  - Ref: SQLServiceAccountPassword
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -InstanceName 'UK'"
+                  - " -TcpPortNumber '23232'"
+                  - " -SqlLicenceKey '"
+                  - Ref: SqlLicenceKey
+                  - '''"'
+              waitAfterCompletion: '0'
+            e-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+        InstallSQLCumulativeUpdate:
+          commands:
+            a-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+            b-install-sql:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\DownloadSQLCumulativeUpdate.ps1
+                    "
+              waitAfterCompletion: '0'
+        Cleanup:
+          commands:
+            a-disable-credssp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\Disable-CredSSP.ps1"
+              waitAfterCompletion: '0'
+        Finalize:
+          commands:
+            a-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+            b-signal-success:
+              command: powershell -Command "Write-AWSQuickStartStatus"
+              waitAfterCompletion: '0'
+    Properties:
+      Affinity:
+        Fn::If:
+        - HostTypeIsDediHost
+        - host
+        - Fn::If:
+          - HostTypeIsDefault
+          - Ref: AWS::NoValue
+          - default
+      HostId:
+        Fn::If:
+        - HostTypeIsDediHost
+        - Ref: DedicatedHostIDNode1
+        - Ref: AWS::NoValue
+      Tenancy:
+        Fn::If:
+        - HostTypeIsDediHost
+        - host
+        - Fn::If:
+          - HostTypeIsDefault
+          - default
+          - dedicated
+      ImageId:
+        Fn::If:
+        - ByolAmi
+        - Ref: DedicatedHostAMI
+        - Fn::FindInMap:
+          - AWSAMIRegionMap
+          - Ref: AWS::Region
+          - Fn::FindInMap:
+            - SQLAMINameMap
+            - Ref: SQLServerVersion
+            - Ref: SQLLicenseProvided
+      IamInstanceProfile:
+        Ref: WSFCProfile
+      InstanceType:
+        Ref: WSFCNode1InstanceType
+      EbsOptimized: 'true'
+      NetworkInterfaces:
+      - DeleteOnTermination: 'true'
+        DeviceIndex: 0
+        SubnetId:
+          Ref: PrivateSubnet1ID
+        PrivateIpAddresses:
+        - Primary: 'true'
+          PrivateIpAddress:
+            Ref: WSFCNode1PrivateIP1
+        - Primary: 'false'
+          PrivateIpAddress:
+            Ref: WSFCNode1PrivateIP2
+        - Primary: 'false'
+          PrivateIpAddress:
+            Ref: WSFCNode1PrivateIP3
+        GroupSet:
+        - Ref: DomainMemberSGID
+        - Ref: DomainMemberSGID2
+        - Ref: WSFCSecurityGroup
+        - Ref: WSFCClientSecurityGroup
+      Tags:
+      - Key: Name
+        Value:
+          Ref: WSFCNode1NetBIOSName
+      - Key: Country
+        Value: EU
+      - Key: Division
+        Value: Core
+      - Key: Environment
+        Value: LIVE
+      - Key: Role
+        Value: SQL
+      - Key: Team
+        Value: Infra
+      - Key: Team-Role
+        Value: Infra-DB
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeSize: '100'
+          VolumeType: gp2
+      - DeviceName: "/dev/xvdca"
+        VirtualName: ephemeral0
+      KeyName:
+        Ref: KeyPairName
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "<script>\n"
+            - 'cfn-init.exe -v -c config -s '
+            - Ref: AWS::StackId
+            - " -r EUSQLWSFCCPR01"
+            - " --region "
+            - Ref: AWS::Region
+            - "\n"
+            - "</script>"
+  EUSQLWSFCCPR03:
+    Type: AWS::EC2::Instance
+    Condition: ThirdAzIsFullNode
+    DependsOn: WSFCNode1WaitCondition
+    Metadata:
+      AWS::CloudFormation::Authentication:
+        S3AccessCreds:
+          type: S3
+          roleName:
+            Ref: WSFCRole
+          buckets:
+          - Ref: QSS3BucketName
+      AWS::CloudFormation::Init:
+        configSets:
+          config:
+          - FetchResources
+          - QuickStartSetup
+          - Prep
+          - Install
+          - InstallSQLCumulativeUpdate
+          - Cleanup
+          - Finalize
+        FetchResources:
+          files:
+            C:\cfn\scripts\Unzip-Archive.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Unzip-Archive.ps1
+            C:\cfn\modules\AWSQuickStart.zip:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/modules/AWSQuickStart.zip
+            C:\cfn\scripts\Join-Domain.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Join-Domain.ps1
+            C:\cfn\scripts\Rename-Computer.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Rename-Computer.ps1
+            C:\cfn\scripts\Restart-Computer.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Restart-Computer.ps1
+            C:\cfn\scripts\Install-WindowsFailoverClustering.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-WindowsFailoverClustering.ps1
+            C:\cfn\scripts\Install-NETFrameworkCore.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-NETFrameworkCore.ps1
+            C:\cfn\scripts\OpenWSFCPorts.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/OpenWSFCPorts.ps1
+            C:\cfn\scripts\Enable-CredSSP.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Enable-CredSSP.ps1
+            C:\cfn\scripts\disable-weak-ciphers.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/disable-weak-ciphers.ps1
+            C:\cfn\scripts\windows-culture-gb.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/windows-culture-gb.ps1
+            C:\cfn\scripts\windows-enable-snmp.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/windows-enable-snmp.ps1
+            C:\cfn\scripts\AddUserToGroup.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/AddUserToGroup.ps1
+            C:\cfn\scripts\DownloadSQLEE.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/DownloadSQLEE.ps1
+            C:\cfn\scripts\InstallSQLEE.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/InstallSQLEE.ps1
+            C:\cfn\scripts\DownloadSQLCumulativeUpdate.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/DownloadSQLCumulativeUpdate.ps1
+            C:\cfn\scripts\InstallSQLInstance.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/InstallSQLInstance.ps1
+            C:\cfn\scripts\RemapEUDriveLetters.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/RemapEUDriveLetters.ps1
+            C:\cfn\scripts\RemapFailoverDriveLetters.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/RemapFailoverDriveLetters.ps1
+            C:\cfn\scripts\RemapUKDriveLetters.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/RemapUKDriveLetters.ps1
+            C:\cfn\scripts\UninstallDefaultSQLInstance.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/UninstallDefaultSQLInstance.ps1
+            C:\cfn\scripts\Disable-CredSSP.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Disable-CredSSP.ps1
+        QuickStartSetup:
+          commands:
+            a-set-execution-policy:
+              command: powershell.exe -Command "Set-ExecutionPolicy RemoteSigned -Force"
+              waitAfterCompletion: '0'
+            b-unpack-quickstart-module:
+              command: powershell.exe -Command C:\cfn\scripts\Unzip-Archive.ps1 -Source
+                C:\cfn\modules\AWSQuickStart.zip -Destination C:\Windows\system32\WindowsPowerShell\v1.0\Modules\
+              waitAfterCompletion: '0'
+            c-init-quickstart-module:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "
+                  - New-AWSQuickStartWaitHandle -Handle '
+                  - Ref: WSFCNode3WaitHandle
+                  - '''"'
+              waitAfterCompletion: '0'
+        Prep:
+          commands:
+            a-initialize-disks:
+              command:
+                Fn::If:
+                - WindowsServer2016
+                - powershell.exe -Command "C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeDisks.ps1"
+                - powershell.exe -Command exit
+              waitAfterCompletion: '0'
+            b-rename-computer:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\Rename-Computer.ps1 -Restart
+                    -NewName '
+                  - Ref: WSFCNode3NetBIOSName
+                  - '''"'
+              waitAfterCompletion: forever
+            c-join-domain:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\Join-Domain.ps1 -DomainName
+                    '
+                  - Ref: DomainDNSName
+                  - "' -UserName '"
+                  - Ref: DomainAdminUser
+                  - "@"
+                  - Ref: DomainDNSName
+                  - "' -Password '"
+                  - Ref: DomainAdminPassword
+                  - '''"'
+              waitAfterCompletion: forever
+            d-install-net-framework-core:
+              command: powershell.exe -Command "C:\cfn\scripts\Install-NETFrameworkCore.ps1"
+              waitAfterCompletion: '0'
+            e-install-windows-failover-clustering:
+              command: powershell.exe -Command "C:\cfn\scripts\Install-WindowsFailoverClustering.ps1"
+              waitAfterCompletion: '0'
+            f-enable-credssp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\Enable-CredSSP.ps1
+              waitAfterCompletion: '0'
+            g-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+            h-open-WSFC-ports:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\OpenWSFCPorts.ps1"
+              waitAfterCompletion: '0'
+            i-add-domadmin-user-to-group:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - " C:\\cfn\\scripts\\AddUserToGroup.ps1 -UserName '"
+                  - Ref: DomainAdminUser
+                  - "' -ServerName '"
+                  - Ref: WSFCNode3NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - ''' -GroupName ''Administrators''"'
+              waitAfterCompletion: '0'
+            j-add-sqlservice-user-to-group:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - C:\cfn\scripts\AddUserToGroup.ps1 -UserName '
+                  - Ref: SQLServiceAccount
+                  - "' -ServerName '"
+                  - Ref: WSFCNode3NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - ''' -GroupName ''Administrators''"'
+              waitAfterCompletion: '0'
+            k-download-sql-installer:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - " C:\\cfn\\scripts\\DownloadSQLEE.ps1 -SQLServerVersion '"
+                  - Ref: SQLServerVersion
+                  - '''"'
+              waitAfterCompletion: '0'
+            l-disable-weak-ciphers:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\disable-weak-ciphers.ps1
+              waitAfterCompletion: '0'
+            m-windows-culture-gb:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\windows-culture-gb.ps1
+              waitAfterCompletion: '0'
+            n-windows-enable-snmp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\windows-enable-snmp.ps1
+              waitAfterCompletion: '0'
+        Install:
+          commands:
+            a-install-sql:
+              command:
+                Fn::If:
+                - SQLBakedInAMI
+                - powershell.exe -Command exit
+                - Fn::Join:
+                  - ''
+                  - - powershell.exe -Command "C:\cfn\scripts\InstallSQLEE.ps1 -DomainNetBIOSName
+                      '
+                    - Ref: DomainNetBIOSName
+                    - "' -DomainAdminUser '"
+                    - Ref: DomainAdminUser
+                    - "' -DomainAdminPassword '"
+                    - Ref: DomainAdminPassword
+                    - "' -SQLServiceAccount '"
+                    - Ref: SQLServiceAccount
+                    - "' -SQLServiceAccountPassword '"
+                    - Ref: SQLServiceAccountPassword
+                    - "' -NetBIOSName '"
+                    - Ref: WSFCNode3NetBIOSName
+                    - '''"'
+              waitAfterCompletion: '0'
+            b-uninstall-default-instance:
+              command: powershell.exe -Command "C:\cfn\scripts\UninstallDefaultSQLInstance.ps1
+              waitAfterCompletion: '0'
+            c-remap-driveletters:
+              command: powershell.exe -Command "C:\cfn\scripts\RemapFailoverDriveLetters.ps1
+              waitAfterCompletion: '0'
+            d-install-sql-instance:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\InstallSQLInstance.ps1
+                    -NetBIOSName '
+                  - Ref: WSFCNode3NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -SQLServiceAccount '"
+                  - Ref: SQLServiceAccount
+                  - "' -SQLServiceAccountPassword '"
+                  - Ref: SQLServiceAccountPassword
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -InstanceName 'UK'"
+                  - " -TcpPortNumber '23232'"
+                  - " -SqlLicenceKey '"
+                  - Ref: SqlLicenceKey
+                  - '''"'
+              waitAfterCompletion: '0'
+            e-install-sql-instance:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\InstallSQLInstance.ps1
+                    -NetBIOSName '
+                  - Ref: WSFCNode3NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -SQLServiceAccount '"
+                  - Ref: SQLServiceAccount
+                  - "' -SQLServiceAccountPassword '"
+                  - Ref: SQLServiceAccountPassword
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -InstanceName 'ES'"
+                  - " -TcpPortNumber '23233'"
+                  - " -SqlLicenceKey '"
+                  - Ref: SqlLicenceKey
+                  - '''"'
+              waitAfterCompletion: '0'
+            f-install-sql-instance:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\InstallSQLInstance.ps1
+                    -NetBIOSName '
+                  - Ref: WSFCNode3NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -SQLServiceAccount '"
+                  - Ref: SQLServiceAccount
+                  - "' -SQLServiceAccountPassword '"
+                  - Ref: SQLServiceAccountPassword
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -InstanceName 'IT'"
+                  - " -TcpPortNumber '23234'"
+                  - " -SqlLicenceKey '"
+                  - Ref: SqlLicenceKey
+                  - '''"'
+              waitAfterCompletion: '0'
+            g-install-sql-instance:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\InstallSQLInstance.ps1
+                    -NetBIOSName '
+                  - Ref: WSFCNode3NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -SQLServiceAccount '"
+                  - Ref: SQLServiceAccount
+                  - "' -SQLServiceAccountPassword '"
+                  - Ref: SQLServiceAccountPassword
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -InstanceName 'PT'"
+                  - " -TcpPortNumber '23235'"
+                  - " -SqlLicenceKey '"
+                  - Ref: SqlLicenceKey
+                  - '''"'
+              waitAfterCompletion: '0'
+            h-install-sql-instance:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\InstallSQLInstance.ps1
+                    -NetBIOSName '
+                  - Ref: WSFCNode3NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -SQLServiceAccount '"
+                  - Ref: SQLServiceAccount
+                  - "' -SQLServiceAccountPassword '"
+                  - Ref: SQLServiceAccountPassword
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -InstanceName 'DK'"
+                  - " -TcpPortNumber '23236'"
+                  - " -SqlLicenceKey '"
+                  - Ref: SqlLicenceKey
+                  - '''"'
+              waitAfterCompletion: '0'
+            i-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+        InstallSQLCumulativeUpdate:
+          commands:
+            a-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+            b-install-sql:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\DownloadSQLCumulativeUpdate.ps1
+                    "
+              waitAfterCompletion: '0'
+        Cleanup:
+          commands:
+            a-disable-credssp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\Disable-CredSSP.ps1"
+              waitAfterCompletion: '0'
+        Finalize:
+          commands:
+            a-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+            b-signal-success:
+              command: powershell -Command "Write-AWSQuickStartStatus"
+              waitAfterCompletion: '0'
+    Properties:
+      Affinity:
+        Fn::If:
+        - HostTypeIsDediHost
+        - host
+        - Fn::If:
+          - HostTypeIsDefault
+          - Ref: AWS::NoValue
+          - default
+      HostId:
+        Fn::If:
+        - HostTypeIsDediHost
+        - Ref: DedicatedHostIDNode3
+        - Ref: AWS::NoValue
+      Tenancy:
+        Fn::If:
+        - HostTypeIsDediHost
+        - host
+        - Fn::If:
+          - HostTypeIsDefault
+          - default
+          - dedicated
+      ImageId:
+        Fn::If:
+        - ByolAmi
+        - Ref: DedicatedHostAMI
+        - Fn::FindInMap:
+          - AWSAMIRegionMap
+          - Ref: AWS::Region
+          - Fn::FindInMap:
+            - SQLAMINameMap
+            - Ref: SQLServerVersion
+            - Ref: SQLLicenseProvided
+      IamInstanceProfile:
+        Ref: WSFCProfile
+      InstanceType:
+        Ref: WSFCNode3InstanceType
+      EbsOptimized: 'true'
+      NetworkInterfaces:
+      - DeleteOnTermination: 'true'
+        DeviceIndex: 0
+        SubnetId:
+          Ref: PrivateSubnet3ID
+        PrivateIpAddresses:
+        - Primary: 'true'
+          PrivateIpAddress:
+            Ref: WSFCNode3PrivateIP1
+        - Primary: 'false'
+          PrivateIpAddress:
+            Ref: WSFCNode3PrivateIP2
+        - Primary: 'false'
+          PrivateIpAddress:
+            Ref: WSFCNode3PrivateIP3
+        GroupSet:
+        - Ref: DomainMemberSGID
+        - Ref: DomainMemberSGID2
+        - Ref: WSFCSecurityGroup
+        - Ref: WSFCClientSecurityGroup
+      Tags:
+      - Key: Name
+        Value:
+          Ref: WSFCNode3NetBIOSName
+      - Key: Country
+        Value: EU
+      - Key: Division
+        Value: Core
+      - Key: Environment
+        Value: LIVE
+      - Key: Role
+        Value: SQL
+      - Key: Team
+        Value: Infra
+      - Key: Team-Role
+        Value: Infra-DB
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeSize: '100'
+          VolumeType: gp2
+      - DeviceName: "/dev/xvdca"
+        VirtualName: ephemeral0
+      KeyName:
+        Ref: KeyPairName
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "<script>\n"
+            - 'cfn-init.exe -v -c config -s '
+            - Ref: AWS::StackId
+            - " -r EUSQLWSFCCPR03"
+            - " --region "
+            - Ref: AWS::Region
+            - "\n"
+            - "</script>"
+  EUSQLWSFCCPR02:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Authentication:
+        S3AccessCreds:
+          type: S3
+          roleName:
+            Ref: WSFCRole
+          buckets:
+          - Ref: QSS3BucketName
+      PseudoDependsOn:
+        Fn::If:
+        - IsTwoNode
+        - - Ref: WSFCFileServerWaitCondition
+          - Ref: WSFCNode1WaitCondition
+        - - Ref: WSFCNode1WaitCondition
+          - Ref: WSFCNode3WaitCondition
+      AWS::CloudFormation::Init:
+        configSets:
+          config:
+          - FetchResources
+          - QuickStartSetup
+          - Prep
+          - Install
+          - InstallSQLCumulativeUpdate
+          - Configure
+          - Cleanup
+          - Finalize
+        FetchResources:
+          files:
+            C:\cfn\scripts\Unzip-Archive.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Unzip-Archive.ps1
+            C:\cfn\modules\AWSQuickStart.zip:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/modules/AWSQuickStart.zip
+            C:\cfn\scripts\Join-Domain.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Join-Domain.ps1
+            C:\cfn\scripts\Rename-Computer.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Rename-Computer.ps1
+            C:\cfn\scripts\Restart-Computer.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Restart-Computer.ps1
+            C:\cfn\scripts\Install-WindowsFailoverClustering.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-WindowsFailoverClustering.ps1
+            C:\cfn\scripts\Install-NETFrameworkCore.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Install-NETFrameworkCore.ps1
+            C:\cfn\scripts\OpenWSFCPorts.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/OpenWSFCPorts.ps1
+            C:\cfn\scripts\Enable-CredSSP.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Enable-CredSSP.ps1
+            C:\cfn\scripts\disable-weak-ciphers.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/disable-weak-ciphers.ps1
+            C:\cfn\scripts\windows-culture-gb.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/windows-culture-gb.ps1
+            C:\cfn\scripts\windows-enable-snmp.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/windows-enable-snmp.ps1
+            C:\cfn\scripts\DownloadSQLEE.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/DownloadSQLEE.ps1
+            C:\cfn\scripts\AddUserToGroup.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/AddUserToGroup.ps1
+            C:\cfn\scripts\InstallSQLEE.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/InstallSQLEE.ps1
+            C:\cfn\scripts\DownloadSQLCumulativeUpdate.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/DownloadSQLCumulativeUpdate.ps1
+            C:\cfn\scripts\InstallSQLInstance.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/InstallSQLInstance.ps1
+            C:\cfn\scripts\RemapEUDriveLetters.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/RemapEUDriveLetters.ps1
+            C:\cfn\scripts\UninstallDefaultSQLInstance.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/UninstallDefaultSQLInstance.ps1
+            C:\cfn\scripts\Configure-WSFC.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Configure-WSFC.ps1
+            C:\cfn\scripts\Create-Share.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Create-Share.ps1
+            C:\cfn\scripts\Set-Folder-Permissions.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Set-Folder-Permissions.ps1
+            C:\cfn\scripts\Enable-AlwaysOn.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Enable-AlwaysOn.ps1
+            C:\cfn\scripts\Set-ClusterQuorum.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}scripts/Set-ClusterQuorum.ps1
+            C:\cfn\scripts\Disable-CredSSP.ps1:
+              source:
+                Fn::Sub: https://${QSS3BucketName}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-microsoft-utilities/scripts/Disable-CredSSP.ps1
+        QuickStartSetup:
+          commands:
+            a-set-execution-policy:
+              command: powershell.exe -Command "Set-ExecutionPolicy RemoteSigned -Force"
+              waitAfterCompletion: '0'
+            b-unpack-quickstart-module:
+              command: powershell.exe -Command C:\cfn\scripts\Unzip-Archive.ps1 -Source
+                C:\cfn\modules\AWSQuickStart.zip -Destination C:\Windows\system32\WindowsPowerShell\v1.0\Modules\
+              waitAfterCompletion: '0'
+            c-init-quickstart-module:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "
+                  - New-AWSQuickStartWaitHandle -Handle '
+                  - Ref: WSFCNode2WaitHandle
+                  - '''"'
+              waitAfterCompletion: '0'
+        Prep:
+          commands:
+            a-initialize-disks:
+              command:
+                Fn::If:
+                - WindowsServer2016
+                - powershell.exe -Command "C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts\InitializeDisks.ps1"
+                - powershell.exe -Command exit
+              waitAfterCompletion: '0'
+            b-rename-computer:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\Rename-Computer.ps1 -Restart
+                    -NewName '
+                  - Ref: WSFCNode2NetBIOSName
+                  - '''"'
+              waitAfterCompletion: forever
+            c-join-domain:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\Join-Domain.ps1 -DomainName
+                    '
+                  - Ref: DomainDNSName
+                  - "' -UserName '"
+                  - Ref: DomainAdminUser
+                  - "@"
+                  - Ref: DomainDNSName
+                  - "' -Password '"
+                  - Ref: DomainAdminPassword
+                  - '''"'
+              waitAfterCompletion: forever
+            d-install-net-framework-core:
+              command: powershell.exe -Command "C:\cfn\scripts\Install-NETFrameworkCore.ps1"
+              waitAfterCompletion: '0'
+            e-install-windows-failover-clustering:
+              command: powershell.exe -Command "C:\cfn\scripts\Install-WindowsFailoverClustering.ps1"
+              waitAfterCompletion: '0'
+            f-enable-credssp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\Enable-CredSSP.ps1
+              waitAfterCompletion: '0'
+            g-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+            h-open-WSFC-ports:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\OpenWSFCPorts.ps1"
+              waitAfterCompletion: '0'
+            i-add-domadmin-user-to-group:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - " C:\\cfn\\scripts\\AddUserToGroup.ps1 -UserName '"
+                  - Ref: DomainAdminUser
+                  - "' -ServerName '"
+                  - Ref: WSFCNode2NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - ''' -GroupName ''Administrators''"'
+              waitAfterCompletion: '0'
+            j-add-sqlservice-user-to-group:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - C:\cfn\scripts\AddUserToGroup.ps1 -UserName '
+                  - Ref: SQLServiceAccount
+                  - "' -ServerName '"
+                  - Ref: WSFCNode2NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - ''' -GroupName ''Administrators''"'
+              waitAfterCompletion: '0'
+            k-download-sql-installer:
+              command:
+                Fn::Join:
+                - ''
+                - - 'powershell.exe '
+                  - "-ExecutionPolicy RemoteSigned "
+                  - -Command "
+                  - " C:\\cfn\\scripts\\DownloadSQLEE.ps1 -SQLServerVersion '"
+                  - Ref: SQLServerVersion
+                  - '''"'
+              waitAfterCompletion: '0'
+            l-disable-weak-ciphers:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\disable-weak-ciphers.ps1
+              waitAfterCompletion: '0'
+            m-windows-culture-gb:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\windows-culture-gb.ps1
+              waitAfterCompletion: '0'
+            n-windows-enable-snmp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\windows-enable-snmp.ps1
+              waitAfterCompletion: '0'
+        Install:
+          commands:
+            a-install-sql:
+              command:
+                Fn::If:
+                - SQLBakedInAMI
+                - powershell.exe -Command exit
+                - Fn::Join:
+                  - ''
+                  - - powershell.exe -Command "C:\cfn\scripts\InstallSQLEE.ps1 -DomainNetBIOSName
+                      '
+                    - Ref: DomainNetBIOSName
+                    - "' -DomainAdminUser '"
+                    - Ref: DomainAdminUser
+                    - "' -DomainAdminPassword '"
+                    - Ref: DomainAdminPassword
+                    - "' -SQLServiceAccount '"
+                    - Ref: SQLServiceAccount
+                    - "' -SQLServiceAccountPassword '"
+                    - Ref: SQLServiceAccountPassword
+                    - "' -NetBIOSName '"
+                    - Ref: WSFCNode2NetBIOSName
+                    - '''"'
+              waitAfterCompletion: '0'
+            b-uninstall-default-instance:
+              command: powershell.exe -Command "C:\cfn\scripts\UninstallDefaultSQLInstance.ps1
+              waitAfterCompletion: '0'
+            c-remap-driveletters:
+              command: powershell.exe -Command "C:\cfn\scripts\RemapEUDriveLetters.ps1
+              waitAfterCompletion: '0'
+            d-install-sql-instance:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\InstallSQLInstance.ps1
+                    -NetBIOSName '
+                  - Ref: WSFCNode2NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -SQLServiceAccount '"
+                  - Ref: SQLServiceAccount
+                  - "' -SQLServiceAccountPassword '"
+                  - Ref: SQLServiceAccountPassword
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -InstanceName 'ES'"
+                  - " -TcpPortNumber '23233'"
+                  - " -SqlLicenceKey '"
+                  - Ref: SqlLicenceKey
+                  - '''"'
+              waitAfterCompletion: '0'
+            e-install-sql-instance:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\InstallSQLInstance.ps1
+                    -NetBIOSName '
+                  - Ref: WSFCNode2NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -SQLServiceAccount '"
+                  - Ref: SQLServiceAccount
+                  - "' -SQLServiceAccountPassword '"
+                  - Ref: SQLServiceAccountPassword
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -InstanceName 'IT'"
+                  - " -TcpPortNumber '23234'"
+                  - " -SqlLicenceKey '"
+                  - Ref: SqlLicenceKey
+                  - '''"'
+              waitAfterCompletion: '0'
+            f-install-sql-instance:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\InstallSQLInstance.ps1
+                    -NetBIOSName '
+                  - Ref: WSFCNode2NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -SQLServiceAccount '"
+                  - Ref: SQLServiceAccount
+                  - "' -SQLServiceAccountPassword '"
+                  - Ref: SQLServiceAccountPassword
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -InstanceName 'PT'"
+                  - " -TcpPortNumber '23235'"
+                  - " -SqlLicenceKey '"
+                  - Ref: SqlLicenceKey
+                  - '''"'
+              waitAfterCompletion: '0'
+            g-install-sql-instance:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\InstallSQLInstance.ps1
+                    -NetBIOSName '
+                  - Ref: WSFCNode2NetBIOSName
+                  - "' -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -SQLServiceAccount '"
+                  - Ref: SQLServiceAccount
+                  - "' -SQLServiceAccountPassword '"
+                  - Ref: SQLServiceAccountPassword
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -InstanceName 'DK'"
+                  - " -TcpPortNumber '23236'"
+                  - " -SqlLicenceKey '"
+                  - Ref: SqlLicenceKey
+                  - '''"'
+              waitAfterCompletion: '0'
+            h-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+        InstallSQLCumulativeUpdate:
+          commands:
+            a-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+            b-install-sql:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\DownloadSQLCumulativeUpdate.ps1
+                    "
+              waitAfterCompletion: '0'
+        Configure:
+          commands:
+            a-configure-WSFC:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -ExecutionPolicy RemoteSigned -Command "C:\cfn\scripts\Configure-WSFC.ps1
+                  - " -WSFCNode1PrivateIP2 "
+                  - Ref: WSFCNode1PrivateIP2
+                  - " -WSFCNode2PrivateIP2 "
+                  - Ref: WSFCNode2PrivateIP2
+                  - Fn::If:
+                    - ThirdAzIsFullNode
+                    - " -WSFCNode3PrivateIP2 "
+                    - Ref: AWS::NoValue
+                  - Fn::If:
+                    - ThirdAzIsFullNode
+                    - Ref: WSFCNode3PrivateIP2
+                    - Ref: AWS::NoValue
+                  - " -WSFCNode1NetBIOSName "
+                  - Ref: WSFCNode1NetBIOSName
+                  - " -WSFCNode2NetBIOSName "
+                  - Ref: WSFCNode2NetBIOSName
+                  - Fn::If:
+                    - ThirdAzIsFullNode
+                    - " -WSFCNode3NetBIOSName "
+                    - Ref: AWS::NoValue
+                  - Fn::If:
+                    - ThirdAzIsFullNode
+                    - Ref: WSFCNode3NetBIOSName
+                    - Ref: AWS::NoValue
+                  - " -DomainNetBIOSName "
+                  - Ref: DomainNetBIOSName
+                  - " -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -NetBIOSName '"
+                  - Ref: WSFCNode2NetBIOSName
+                  - "' -WSFCClusterName '"
+                  - Ref: WSFCClusterName
+                  - '''"'
+              waitAfterCompletion: '0'
+            b-create-witness-share:
+              Fn::If:
+              - IsTwoNode
+              - command:
+                  Fn::Join:
+                  - ''
+                  - - powershell.exe -Command "C:\cfn\scripts\Create-Share.ps1
+                    - " -Path 'c:\\witness'"
+                    - " -ShareName 'witness'"
+                    - " -FolderPath 'c:\\'"
+                    - " -FolderName 'witness'"
+                    - " -DomainNetBIOSName '"
+                    - Ref: DomainNetBIOSName
+                    - "' -DomainAdminUser '"
+                    - Ref: DomainAdminUser
+                    - "' -DomainAdminPassword '"
+                    - Ref: DomainAdminPassword
+                    - "' -ServerName '"
+                    - Ref: WSFCFileServerNetBIOSName
+                    - '''"'
+                waitAfterCompletion: '0'
+              - Ref: AWS::NoValue
+            c-create-Replica-share:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -Command "C:\cfn\scripts\Create-Share.ps1
+                  - " -Path 'c:\\replica'"
+                  - " -ShareName 'replica'"
+                  - " -FolderPath 'c:\\'"
+                  - " -FolderName 'replica'"
+                  - " -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -ServerName '"
+                  - Fn::If:
+                    - IsTwoNode
+                    - Ref: WSFCFileServerNetBIOSName
+                    - Ref: WSFCNode1NetBIOSName
+                  - '''"'
+              waitAfterCompletion: '0'
+            d-create-Second-Replica-share:
+              Fn::If:
+              - ThirdAzIsFullNode
+              - command:
+                  Fn::Join:
+                  - ''
+                  - - powershell.exe -Command "C:\cfn\scripts\Create-Share.ps1
+                    - " -Path 'c:\\replica'"
+                    - " -ShareName 'replica'"
+                    - " -FolderPath 'c:\\'"
+                    - " -FolderName 'replica'"
+                    - " -DomainNetBIOSName '"
+                    - Ref: DomainNetBIOSName
+                    - "' -DomainAdminUser '"
+                    - Ref: DomainAdminUser
+                    - "' -DomainAdminPassword '"
+                    - Ref: DomainAdminPassword
+                    - "' -ServerName '"
+                    - Fn::If:
+                      - IsTwoNode
+                      - Ref: WSFCFileServerNetBIOSName
+                      - Ref: WSFCNode2NetBIOSName
+                    - '''"'
+                waitAfterCompletion: '0'
+              - Ref: AWS::NoValue
+            e-Set-Folder-Permissions:
+              Fn::If:
+              - IsTwoNode
+              - command:
+                  Fn::Join:
+                  - ''
+                  - - powershell.exe -ExecutionPolicy RemoteSigned "C:\cfn\scripts\Set-Folder-Permissions.ps1
+                    - " -DomainNetBIOSName '"
+                    - Ref: DomainNetBIOSName
+                    - "' -DomainAdminUser '"
+                    - Ref: DomainAdminUser
+                    - "' -DomainAdminPassword '"
+                    - Ref: DomainAdminPassword
+                    - "' -SQLServiceAccount '"
+                    - Ref: SQLServiceAccount
+                    - "' -FileServerNetBIOSName '"
+                    - Ref: WSFCFileServerNetBIOSName
+                    - "' -WSFCClusterName '"
+                    - Ref: WSFCClusterName
+                    - '''"'
+                waitAfterCompletion: '0'
+              - Ref: AWS::NoValue
+            f-Enable-AlwaysOn:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -ExecutionPolicy RemoteSigned "C:\cfn\scripts\Enable-AlwaysOn.ps1
+                  - " -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -WSFCNode1NetBIOSName '"
+                  - Ref: WSFCNode1NetBIOSName
+                  - "' -WSFCNode2NetBIOSName '"
+                  - Ref: WSFCNode2NetBIOSName
+                  - Fn::If:
+                    - ThirdAzIsFullNode
+                    - "' -WSFCNode3NetBIOSName '"
+                    - Ref: AWS::NoValue
+                  - Fn::If:
+                    - ThirdAzIsFullNode
+                    - Ref: WSFCNode3NetBIOSName
+                    - Ref: AWS::NoValue
+                  - "' -UKInstanceName 'UK"
+                  - "' -EUInstanceNames 'DK','ES','IT','PT"
+                  - '''"'
+              waitAfterCompletion: '0'
+            g-Set-ClusterQuorum:
+              command:
+                Fn::Join:
+                - ''
+                - - powershell.exe -ExecutionPolicy RemoteSigned "C:\cfn\scripts\Set-ClusterQuorum.ps1
+                  - Fn::If:
+                    - ThirdAzIsFullNode
+                    - " -Witness $false"
+                    - Ref: AWS::NoValue
+                  - " -DomainNetBIOSName '"
+                  - Ref: DomainNetBIOSName
+                  - "' -DomainAdminUser '"
+                  - Ref: DomainAdminUser
+                  - "' -DomainAdminPassword '"
+                  - Ref: DomainAdminPassword
+                  - "' -WSFCNode2NetBIOSName '"
+                  - Ref: WSFCNode2NetBIOSName
+                  - Fn::If:
+                    - IsTwoNode
+                    - "' -FileServerNetBIOSName '"
+                    - Ref: AWS::NoValue
+                  - Fn::If:
+                    - IsTwoNode
+                    - Ref: WSFCFileServerNetBIOSName
+                    - Ref: AWS::NoValue
+                  - '''"'
+              waitAfterCompletion: '0'
+        Cleanup:
+          commands:
+            a-disable-credssp:
+              command: powershell.exe -ExecutionPolicy RemoteSigned "C:\cfn\scripts\Disable-CredSSP.ps1"
+              waitAfterCompletion: '0'
+        Finalize:
+          commands:
+            a-reboot:
+              command: powershell.exe -Command "C:\cfn\scripts\Restart-Computer.ps1"
+              waitAfterCompletion: forever
+            b-signal-success:
+              command: powershell -Command "Write-AWSQuickStartStatus"
+              waitAfterCompletion: '0'
+    Properties:
+      Affinity:
+        Fn::If:
+        - HostTypeIsDediHost
+        - host
+        - Fn::If:
+          - HostTypeIsDefault
+          - Ref: AWS::NoValue
+          - default
+      HostId:
+        Fn::If:
+        - HostTypeIsDediHost
+        - Ref: DedicatedHostIDNode2
+        - Ref: AWS::NoValue
+      Tenancy:
+        Fn::If:
+        - HostTypeIsDediHost
+        - host
+        - Fn::If:
+          - HostTypeIsDefault
+          - default
+          - dedicated
+      ImageId:
+        Fn::If:
+        - ByolAmi
+        - Ref: DedicatedHostAMI
+        - Fn::FindInMap:
+          - AWSAMIRegionMap
+          - Ref: AWS::Region
+          - Fn::FindInMap:
+            - SQLAMINameMap
+            - Ref: SQLServerVersion
+            - Ref: SQLLicenseProvided
+      IamInstanceProfile:
+        Ref: WSFCProfile
+      InstanceType:
+        Ref: WSFCNode2InstanceType
+      EbsOptimized: 'true'
+      NetworkInterfaces:
+      - DeleteOnTermination: 'true'
+        DeviceIndex: 0
+        SubnetId:
+          Ref: PrivateSubnet2ID
+        PrivateIpAddresses:
+        - Primary: 'true'
+          PrivateIpAddress:
+            Ref: WSFCNode2PrivateIP1
+        - Primary: 'false'
+          PrivateIpAddress:
+            Ref: WSFCNode2PrivateIP2
+        - Primary: 'false'
+          PrivateIpAddress:
+            Ref: WSFCNode2PrivateIP3
+        GroupSet:
+        - Ref: DomainMemberSGID
+        - Ref: DomainMemberSGID2
+        - Ref: WSFCSecurityGroup
+        - Ref: WSFCClientSecurityGroup
+      Tags:
+      - Key: Name
+        Value:
+          Ref: WSFCNode2NetBIOSName
+      - Key: Country
+        Value: EU
+      - Key: Division
+        Value: Core
+      - Key: Environment
+        Value: LIVE
+      - Key: Role
+        Value: SQL
+      - Key: Team
+        Value: Infra
+      - Key: Team-Role
+        Value: Infra-DB
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sda1"
+        Ebs:
+          VolumeSize: '100'
+          VolumeType: gp2
+      - DeviceName: "/dev/xvdca"
+        VirtualName: ephemeral0
+      KeyName:
+        Ref: KeyPairName
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "<script>\n"
+            - 'cfn-init.exe -v -c config -s '
+            - Ref: AWS::StackId
+            - " -r EUSQLWSFCCPR02"
+            - " --region "
+            - Ref: AWS::Region
+            - "\n"
+            - "</script>"
+  WSFCNode1VolumeD:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: UKVolumeDSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeDType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR01
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeDIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeDIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode1VolumeE:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: UKVolumeESize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeEType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR01
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeEIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeEIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode1VolumeF:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: UKVolumeFSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeFType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR01
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeFIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeFIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode1VolumeG:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: UKVolumeGSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeGType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR01
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeGIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeGIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode1VolumeH:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: UKVolumeHSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeHType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR01
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeHIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeHIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode1VolumeI:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: UKVolumeISize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeIType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR01
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeIIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeIIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode1VolumeJ:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: UKVolumeJSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeJType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR01
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeJIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeJIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode2VolumeK:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: EUVolumeKSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeKType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR02
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeKIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeKIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode2VolumeL:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: EUVolumeLSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeLType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR02
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeLIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeLIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode2VolumeM:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: EUVolumeMSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeMType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR02
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeMIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeMIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode2VolumeN:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: EUVolumeNSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeNType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR02
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeNIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeNIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode2VolumeO:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: EUVolumeOSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeOType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR02
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeOIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeOIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode2VolumeP:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: EUVolumePSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumePType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR02
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumePIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumePIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode2VolumeQ:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: EUVolumeQSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeQType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR02
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeQIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeQIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeD:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: UKVolumeDSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeDType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeDIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeDIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeE:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: UKVolumeESize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeEType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeEIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeEIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeF:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: UKVolumeFSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeFType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeFIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeFIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeG:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: UKVolumeGSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeGType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeGIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeGIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeH:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: UKVolumeHSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeHType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeHIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeHIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeI:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: UKVolumeISize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeIType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeIIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeIIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeJ:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: UKVolumeJSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - UKVolumeJType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - UKVolumeJIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - UKVolumeJIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeK:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: EUVolumeKSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeKType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeKIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeKIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeL:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: EUVolumeLSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeLType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeLIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeLIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeM:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: EUVolumeMSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeMType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeMIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeMIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeN:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: EUVolumeNSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeNType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeNIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeNIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeO:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: EUVolumeOSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeOType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeOIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeOIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeP:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: EUVolumePSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumePType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumePIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumePIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode3VolumeQ:
+    Type: AWS::EC2::Volume
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Size:
+        Ref: EUVolumeQSize
+      VolumeType:
+        Fn::FindInMap:
+        - VolumeMap
+        - EUVolumeQType
+        - Default
+      AvailabilityZone:
+        Fn::GetAtt:
+        - EUSQLWSFCCPR03
+        - AvailabilityZone
+      Iops:
+        Fn::If:
+        - EUVolumeQIsIo1
+        - Fn::FindInMap:
+          - VolumeMap
+          - EUVolumeQIops
+          - Default
+        - Ref: AWS::NoValue
+      Encrypted: 'true'
+  WSFCNode1VolumeDAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdb"
+      InstanceId:
+        Ref: EUSQLWSFCCPR01
+      VolumeId:
+        Ref: WSFCNode1VolumeD
+  WSFCNode1VolumeEAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdc"
+      InstanceId:
+        Ref: EUSQLWSFCCPR01
+      VolumeId:
+        Ref: WSFCNode1VolumeE
+  WSFCNode1VolumeFAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdd"
+      InstanceId:
+        Ref: EUSQLWSFCCPR01
+      VolumeId:
+        Ref: WSFCNode1VolumeF
+  WSFCNode1VolumeGAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvde"
+      InstanceId:
+        Ref: EUSQLWSFCCPR01
+      VolumeId:
+        Ref: WSFCNode1VolumeG
+  WSFCNode1VolumeHAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdf"
+      InstanceId:
+        Ref: EUSQLWSFCCPR01
+      VolumeId:
+        Ref: WSFCNode1VolumeH
+  WSFCNode1VolumeIAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdg"
+      InstanceId:
+        Ref: EUSQLWSFCCPR01
+      VolumeId:
+        Ref: WSFCNode1VolumeI
+  WSFCNode1VolumeJAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdh"
+      InstanceId:
+        Ref: EUSQLWSFCCPR01
+      VolumeId:
+        Ref: WSFCNode1VolumeJ
+  WSFCNode2VolumeKAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdi"
+      InstanceId:
+        Ref: EUSQLWSFCCPR02
+      VolumeId:
+        Ref: WSFCNode2VolumeK
+  WSFCNode2VolumeLAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdj"
+      InstanceId:
+        Ref: EUSQLWSFCCPR02
+      VolumeId:
+        Ref: WSFCNode2VolumeL
+  WSFCNode2VolumeMAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdk"
+      InstanceId:
+        Ref: EUSQLWSFCCPR02
+      VolumeId:
+        Ref: WSFCNode2VolumeM
+  WSFCNode2VolumeNAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdl"
+      InstanceId:
+        Ref: EUSQLWSFCCPR02
+      VolumeId:
+        Ref: WSFCNode2VolumeN
+  WSFCNode2VolumeOAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdm"
+      InstanceId:
+        Ref: EUSQLWSFCCPR02
+      VolumeId:
+        Ref: WSFCNode2VolumeO
+  WSFCNode2VolumePAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdn"
+      InstanceId:
+        Ref: EUSQLWSFCCPR02
+      VolumeId:
+        Ref: WSFCNode2VolumeP
+  WSFCNode2VolumeQAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: "/dev/xvdo"
+      InstanceId:
+        Ref: EUSQLWSFCCPR02
+      VolumeId:
+        Ref: WSFCNode2VolumeQ
+  WSFCNode3VolumeDAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdb"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeD
+  WSFCNode3VolumeEAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdc"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeE
+  WSFCNode3VolumeFAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdd"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeF
+  WSFCNode3VolumeGAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvde"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeG
+  WSFCNode3VolumeHAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdf"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeH
+  WSFCNode3VolumeIAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdg"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeI
+  WSFCNode3VolumeJAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdh"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeJ
+  WSFCNode3VolumeKAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdi"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeK
+  WSFCNode3VolumeLAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdj"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeL
+  WSFCNode3VolumeMAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdk"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeM
+  WSFCNode3VolumeNAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdl"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeN
+  WSFCNode3VolumeOAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdm"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeO
+  WSFCNode3VolumePAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdn"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeP
+  WSFCNode3VolumeQAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: ThirdAzIsFullNode
+    Properties:
+      Device: "/dev/xvdo"
+      InstanceId:
+        Ref: EUSQLWSFCCPR03
+      VolumeId:
+        Ref: WSFCNode3VolumeQ
+  WSFCSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable the WSFC and SQL AlwaysOn Availability Group communications
+      VpcId:
+        Ref: VPCID
+  WSFCSecurityGroupIngressIcmp:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: icmp
+      FromPort: "-1"
+      ToPort: "-1"
+  WSFCSecurityGroupIngressTcp135:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: tcp
+      FromPort: '135'
+      ToPort: '135'
+  WSFCSecurityGroupIngressTcp137:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: tcp
+      FromPort: '137'
+      ToPort: '137'
+  WSFCSecurityGroupIngressTcp445:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: tcp
+      FromPort: '445'
+      ToPort: '445'
+  WSFCSecurityGroupIngressTcp1433:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: tcp
+      FromPort: '1433'
+      ToPort: '1434'
+  WSFCSecurityGroupIngressTcp23232:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: tcp
+      FromPort: '23232'
+      ToPort: '23240'
+  WSFCSecurityGroupIngressTcp3343:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: tcp
+      FromPort: '3343'
+      ToPort: '3343'
+  WSFCSecurityGroupIngressTcp5022:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: tcp
+      FromPort: '5022'
+      ToPort: '5040'
+  WSFCSecurityGroupIngressTcp5985:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: tcp
+      FromPort: '5985'
+      ToPort: '5985'
+  WSFCSecurityGroupIngressUdp137:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: udp
+      FromPort: '137'
+      ToPort: '137'
+  WSFCSecurityGroupIngressUdp3343:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: udp
+      FromPort: '3343'
+      ToPort: '3343'
+  WSFCSecurityGroupIngressUdp1434:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: WSFCSecurityGroup
+      SourceSecurityGroupId:
+        Ref: WSFCSecurityGroup
+      IpProtocol: udp
+      FromPort: '1434'
+      ToPort: '1434'
+  SQLServerAccessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: VPCID
+      GroupDescription: Allows access to SQL Servers
+  WSFCClientSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SQL Client access ports
+      VpcId:
+        Ref: VPCID
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '1433'
+        ToPort: '1433'
+        SourceSecurityGroupId:
+          Ref: SQLServerAccessSecurityGroup
+      - IpProtocol: tcp
+        FromPort: '23232'
+        ToPort: '23240'
+        SourceSecurityGroupId:
+          Ref: SQLServerAccessSecurityGroup
+Outputs:
+  DomainAdmin:
+    Value:
+      Fn::Join:
+      - ''
+      - - Ref: DomainNetBIOSName
+        - "\\"
+        - Ref: DomainAdminUser
+    Description: Domain administrator account
+  LocalAdmin:
+    Value: Administrator
+    Description: Please retrieve Administrator password of the instance
+  WSFCNode1NetBIOSName:
+    Value:
+      Ref: WSFCNode1NetBIOSName
+    Description: NetBIOS name of the 1st WSFC Node
+  WSFCNode2NetBIOSName:
+    Value:
+      Ref: WSFCNode2NetBIOSName
+    Description: NetBIOS name of the 2nd WSFC Node
+  WSFCNode3NetBIOSName:
+    Condition: ThirdAzIsFullNode
+    Value:
+      Ref: WSFCNode3NetBIOSName
+    Description: NetBIOS name of the 3rd WSFC Node
+  SQLServerAccessSecurityGroupID:
+    Value:
+      Ref: SQLServerAccessSecurityGroup
+    Description: Add instances that require access to SQL to this Security Group

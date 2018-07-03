@@ -1,0 +1,141 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation template to launch a Redis instance.
+Parameters:
+  AMI:
+    Description: AMI ID
+    Type: 'AWS::EC2::Image::Id'
+    Default: ami-c798afb0
+  Subnet1:
+    Type: 'AWS::EC2::Subnet::Id'
+    Default: subnet-dae3bebf
+    Description: The SubnetId where the instance will be launched.
+  RedisPrivateIP:
+    Description: The private IP address to be assigned to the redis instance.
+    Type: String
+    Default: ''
+  SecurityGroups:
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Default: sg-7b54821f
+    Description: The security groups allowed to access these servers
+  InstanceType:
+    Description: Type of EC2 instance to launch.
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c1.xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  Environment:
+    Description: Type of environment to launch.
+    Type: String
+    Default: DEV
+    AllowedValues:
+      - DEV
+      - STAGE
+      - LIVE
+    ConstraintDescription: must be a valid Environment instance type.
+  Country:
+    Description: Country code for stack.
+    Type: String
+  KeyName:
+    Description: The EC2 Key Pair to allow Remote Desktop access or SSH to the instances.
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: EC2Connect
+Mappings:
+  EnvironmentToCode:
+    DEV:
+      Value: DV
+    STAGE:
+      Value: ST
+    LIVE:
+      Value: PR
+Conditions:
+  RedisUnspecifiedPrivateIP: !Equals
+    - !Ref RedisPrivateIP
+    - ''
+Resources:
+  REDIS01:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !Ref AMI
+      InstanceType: !Ref InstanceType
+      NetworkInterfaces:
+        - DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId: !Ref Subnet1
+          PrivateIpAddress: !If
+            - RedisUnspecifiedPrivateIP
+            - !Ref 'AWS::NoValue'
+            - !Ref RedisPrivateIP
+          GroupSet: !Ref SecurityGroups
+      IamInstanceProfile: Software
+      UserData: !Base64
+        'Fn::Join':
+          - ''
+          - - '#!/bin/bash -ex'
+            - |+
+
+            - yum -y install wget
+            - |+
+
+            - >-
+              wget -r --no-parent -A 'epel-release-*.rpm'
+              http://dl.fedoraproject.org/pub/epel/7/x86_64/e/
+            - |+
+
+            - >-
+              rpm -Uvh
+              dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-*.rpm
+            - |+
+
+            - yum -y install redis
+            - |+
+
+            - 'wget https://tom-filerepo-pri.s3.amazonaws.com/Redis/redis.conf'
+            - |+
+
+            - cp redis.conf /etc/redis.conf
+            - |+
+
+            - echo Starting redis service...
+            - |+
+
+            - systemctl start redis.service
+            - |+
+
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref Country
+              - REDISC
+              - !FindInMap
+                - EnvironmentToCode
+                - !Ref Environment
+                - Value
+              - '-01'
+        - Key: Team
+          Value: Infra
+        - Key: Role
+          Value: Redis
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: AMI
+          Value: !Ref AMI
+Outputs:
+  REDIS01:
+    Value: !Ref REDIS01

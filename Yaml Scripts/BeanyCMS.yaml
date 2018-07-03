@@ -1,0 +1,373 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  CloudFormation template to launch an Elastic Beanstalk CMS (Content Management
+  System) Environment
+Parameters:
+  AMI:
+    Description: AMI ID
+    Type: 'AWS::EC2::Image::Id'
+    Default: ami-fd97fa84
+  VpcId:
+    Type: 'AWS::EC2::VPC::Id'
+    Description: VpcId of your existing Virtual Private Cloud (VPC).
+    Default: vpc-875834e2
+  ELBSubnets:
+    Type: 'List<AWS::EC2::Subnet::Id>'
+    Default: subnet-dae3bebf
+    Description: The SubnetId where the ELB will be launched
+  InstanceSubnets:
+    Type: 'List<AWS::EC2::Subnet::Id>'
+    Default: subnet-dae3bebf
+    Description: The SubnetId where the Instances will be launched
+  SecurityGroups:
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Default: sg-7b54821f
+    Description: The security groups allowed to access these servers
+  MinSize:
+    Type: Number
+    Default: '1'
+    Description: The min number of Instances
+  MaxSize:
+    Type: Number
+    Default: '1'
+    Description: The max number of Instances
+  InstanceType:
+    Description: Type of EC2 instance to launch.
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c1.xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  OctopusEnvironment:
+    Description: Type of environment to launch.
+    Type: String
+    Default: DeployToDev
+    AllowedValues:
+      - DeployToDev
+      - DeployToStaging
+      - DeployToLive
+      - DeployToLive-Blue
+      - DeployToLive-Green
+    ConstraintDescription: must be a valid Octopus Environment instance type.
+  OctopusRoles:
+    Description: Type of environment to launch.
+    Type: String
+    Default: uk-cms-server NXLog Delete.Web.Logs.7.days web-server server beanstalk
+  Country:
+    Description: Country code for stack.
+    Type: String
+  ApplicationName:
+    Type: String
+    Description: The name of the application.
+  ActiveEnvironment:
+    Description: Whether to create a new Application or use an existing.
+    Type: String
+    Default: 'Yes'
+    AllowedValues:
+      - 'Yes'
+      - 'No'
+  SSLCertificate:
+    Description: Type of environment to launch.
+    Type: String
+    AllowedValues:
+      - wildcard-tombola-com
+      - wildcard-tombola-uk
+      - wildcard-tombola-it
+      - wildcard-tombola-es
+      - wildcard-arcade-uk
+  ElasticBeanstalkBootstrapper:
+    Type: String
+    Description: Bootstrapper build version.
+    Default: OD-EB-bootstrapper-0.0.132.zip
+  KeyName:
+    Description: The EC2 Key Pair to allow Remote Desktop access or SSH to the instances.
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: EC2Connect
+Conditions:
+  ActiveApplication: !Equals
+    - 'Yes'
+    - !Ref ActiveEnvironment
+Mappings:
+  OctopusToEnvironment:
+    DeployToDev:
+      Value: DEV
+    DeployToStaging:
+      Value: STAGE
+    DeployToLive:
+      Value: LIVE
+    DeployToLive-Blue:
+      Value: LIVE
+    DeployToLive-Green:
+      Value: LIVE
+  EnvironmentToCode:
+    DEV:
+      Value: DV
+    STAGE:
+      Value: ST
+    LIVE:
+      Value: PR
+  SSLCertificateToCode:
+    wildcard-tombola-uk:
+      INFRA: >-
+        arn:aws:acm:eu-west-1:160821142532:certificate/f12bfaf4-2354-46ed-87a9-fb07c117b769
+      PLAY: >-
+        arn:aws:acm:eu-west-1:630702119774:certificate/6bab9d4a-a7b6-4dab-b3b3-303c7a3390de
+      DEV: >-
+        arn:aws:acm:eu-west-1:075458894664:certificate/1a347d01-e41f-41ca-963d-a1b8279fe0de
+      STAGE: >-
+        arn:aws:acm:eu-west-1:094345010951:certificate/ea14c595-1bdd-4037-98c4-0d5dd65d3313
+      LIVE: >-
+        arn:aws:acm:eu-west-1:189470795347:certificate/378f64a7-c347-4e80-b068-7c99b1dfb4f9
+    wildcard-tombola-it:
+      INFRA: >-
+        arn:aws:acm:eu-west-1:160821142532:certificate/dbc84553-7245-4d36-97f9-8458f2dfc2cf
+      PLAY: >-
+        arn:aws:acm:eu-west-1:630702119774:certificate/1a503a35-2e8a-4c10-a4d5-1299e655398b
+      DEV: >-
+        arn:aws:acm:eu-west-1:075458894664:certificate/bdb2a7a2-a9d7-4a29-93c0-56917b6bf208
+      STAGE: >-
+        arn:aws:acm:eu-west-1:094345010951:certificate/b943fe91-954b-4bf8-814e-5230011f634b
+      LIVE: >-
+        arn:aws:acm:eu-west-1:189470795347:certificate/72054d5e-3e8c-4eb5-9a65-e101dd07fa58
+    wildcard-tombola-es:
+      INFRA: >-
+        arn:aws:acm:eu-west-1:160821142532:certificate/d8f99f82-d7ab-45bd-981f-567c2abb1f5d
+      PLAY: >-
+        arn:aws:acm:eu-west-1:630702119774:certificate/2e4ffa43-da25-4dc1-bdb7-c22780355662
+      DEV: >-
+        arn:aws:acm:eu-west-1:075458894664:certificate/8570651c-4141-49ee-8250-8972660d08a5
+      STAGE: >-
+        arn:aws:acm:eu-west-1:094345010951:certificate/1bbd90ad-3b86-4f4e-99a4-3befe13819c1
+      LIVE: >-
+        arn:aws:acm:eu-west-1:189470795347:certificate/feef62fb-6cac-4c4f-97f4-adde1d01ff7b
+    wildcard-tombola-pt:
+      INFRA: >-
+        arn:aws:acm:eu-west-1:160821142532:certificate/54251bb7-2db6-4bf0-a5ef-7924498820c1
+      PLAY: >-
+        arn:aws:acm:eu-west-1:630702119774:certificate/278e06a5-b5d0-4e5e-b6ed-6a2dab0c8047
+      DEV: >-
+        arn:aws:acm:eu-west-1:075458894664:certificate/bf85c614-5763-43a3-b332-d0f8e07deb88
+      STAGE: >-
+        arn:aws:acm:eu-west-1:094345010951:certificate/ec05f804-621f-41e3-963f-a15649907f45
+      LIVE: >-
+        arn:aws:acm:eu-west-1:189470795347:certificate/b1a134e4-ae13-40c0-857e-72bcce4bc7fc
+    wildcard-tombola-com:
+      INFRA: >-
+        arn:aws:acm:eu-west-1:160821142532:certificate/b8eecc28-bfca-4e58-a8b8-8c89b4653a45
+      PLAY: >-
+        arn:aws:acm:eu-west-1:630702119774:certificate/eadafb9e-a9be-440c-b689-8ed87e613902
+      DEV: >-
+        arn:aws:acm:eu-west-1:075458894664:certificate/5ea6c86b-eff9-454d-acbe-811e866ea890
+      STAGE: >-
+        arn:aws:acm:eu-west-1:094345010951:certificate/88c64072-8976-41af-9b49-092c370f7033
+      LIVE: >-
+        arn:aws:acm:eu-west-1:189470795347:certificate/182dae2f-6d7f-4d9d-b633-5175a14949b8
+    wildcard-arcade-uk:
+      INFRA: >-
+        arn:aws:acm:eu-west-1:160821142532:certificate/b16e9141-7263-4c4c-93fc-66d96f7f2a64
+      PLAY: >-
+        arn:aws:acm:eu-west-1:630702119774:certificate/86b4b2be-b208-4c87-89b9-c79d47efce95
+      DEV: >-
+        arn:aws:acm:eu-west-1:075458894664:certificate/c5295396-0a74-4bd4-a752-b34fe4deb91e
+      STAGE: >-
+        arn:aws:acm:eu-west-1:094345010951:certificate/67f1bcf6-a1d4-45a8-878c-aeec8a3d066a
+      LIVE: >-
+        arn:aws:acm:eu-west-1:189470795347:certificate/b76b8ab1-8bc5-47d9-9a24-ca50e5d332a4
+Resources:
+  APP:
+    Type: 'AWS::ElasticBeanstalk::Application'
+    Properties:
+      ApplicationName: !Ref ApplicationName
+      Description: !Ref ApplicationName
+  APPVER:
+    Type: 'AWS::ElasticBeanstalk::ApplicationVersion'
+    Properties:
+      ApplicationName: !Ref APP
+      Description: !Join
+        - ''
+        - - !Ref ApplicationName
+          - ' - '
+          - !Ref ElasticBeanstalkBootstrapper
+      SourceBundle:
+        S3Bucket: tom-filerepo-pr
+        S3Key: !Join
+          - ''
+          - - ElasticBeanstalkBootstrapper/
+            - !Ref ElasticBeanstalkBootstrapper
+  ENVIRONMENT:
+    Type: 'AWS::ElasticBeanstalk::Environment'
+    Properties:
+      ApplicationName: !Ref APP
+      CNAMEPrefix: !If
+        - ActiveApplication
+        - !Join
+          - ''
+          - - !Ref Country
+            - UMBC
+            - !FindInMap
+              - EnvironmentToCode
+              - !FindInMap
+                - OctopusToEnvironment
+                - !Ref OctopusEnvironment
+                - Value
+              - Value
+            - '-active'
+        - !Join
+          - ''
+          - - !Ref Country
+            - UMBC
+            - !FindInMap
+              - EnvironmentToCode
+              - !FindInMap
+                - OctopusToEnvironment
+                - !Ref OctopusEnvironment
+                - Value
+              - Value
+      SolutionStackName: 64bit Windows Server 2012 R2 running IIS 8.5
+      EnvironmentName: !Join
+        - ''
+        - - !Ref Country
+          - UMBC
+          - !FindInMap
+            - EnvironmentToCode
+            - !FindInMap
+              - OctopusToEnvironment
+              - !Ref OctopusEnvironment
+              - Value
+            - Value
+          - !If
+            - ActiveApplication
+            - '-01'
+            - '-02'
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref Country
+              - UMBC
+              - !FindInMap
+                - EnvironmentToCode
+                - !FindInMap
+                  - OctopusToEnvironment
+                  - !Ref OctopusEnvironment
+                  - Value
+                - Value
+        - Key: Team-Role
+          Value: Platform-Web Misc
+        - Key: Division
+          Value: Core
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !FindInMap
+            - OctopusToEnvironment
+            - !Ref OctopusEnvironment
+            - Value
+        - Key: Octopus.Role
+          Value: !Ref OctopusRoles
+        - Key: Octopus.Environment
+          Value: !Ref OctopusEnvironment
+      VersionLabel: !Ref APPVER
+      OptionSettings:
+        - Namespace: 'aws:autoscaling:launchconfiguration'
+          OptionName: EC2KeyName
+          Value: !Ref KeyName
+        - Namespace: 'aws:autoscaling:launchconfiguration'
+          OptionName: IamInstanceProfile
+          Value: aws-elasticbeanstalk-ec2-role
+        - Namespace: 'aws:autoscaling:launchconfiguration'
+          OptionName: ImageId
+          Value: !Ref AMI
+        - Namespace: 'aws:autoscaling:launchconfiguration'
+          OptionName: InstanceType
+          Value: !Ref InstanceType
+        - Namespace: 'aws:autoscaling:launchconfiguration'
+          OptionName: SecurityGroups
+          Value: !Join
+            - ','
+            - !Ref SecurityGroups
+        - Namespace: 'aws:autoscaling:asg'
+          OptionName: MaxSize
+          Value: !Ref MaxSize
+        - Namespace: 'aws:autoscaling:asg'
+          OptionName: MinSize
+          Value: !Ref MinSize
+        - Namespace: 'aws:ec2:vpc'
+          OptionName: VPCId
+          Value: !Ref VpcId
+        - Namespace: 'aws:ec2:vpc'
+          OptionName: Subnets
+          Value: !Join
+            - ','
+            - !Ref InstanceSubnets
+        - Namespace: 'aws:ec2:vpc'
+          OptionName: ELBSubnets
+          Value: !Join
+            - ','
+            - !Ref ELBSubnets
+        - Namespace: 'aws:ec2:vpc'
+          OptionName: AssociatePublicIpAddress
+          Value: 'false'
+        - Namespace: 'aws:elasticbeanstalk:application'
+          OptionName: Application Healthcheck URL
+          Value: /
+        - Namespace: 'aws:elb:healthcheck'
+          OptionName: HealthyThreshold
+          Value: '3'
+        - Namespace: 'aws:elb:healthcheck'
+          OptionName: Interval
+          Value: '60'
+        - Namespace: 'aws:elb:healthcheck'
+          OptionName: Timeout
+          Value: '30'
+        - Namespace: 'aws:elb:healthcheck'
+          OptionName: UnhealthyThreshold
+          Value: '10'
+        - Namespace: 'aws:elb:loadbalancer'
+          OptionName: CrossZone
+          Value: 'true'
+        - Namespace: 'aws:elb:loadbalancer'
+          OptionName: LoadBalancerHTTPPort
+          Value: '80'
+        - Namespace: 'aws:elb:loadbalancer'
+          OptionName: LoadBalancerPortProtocol
+          Value: HTTP
+        - Namespace: 'aws:elb:loadbalancer'
+          OptionName: LoadBalancerHTTPSPort
+          Value: '443'
+        - Namespace: 'aws:elb:loadbalancer'
+          OptionName: LoadBalancerSSLPortProtocol
+          Value: HTTPS
+        - Namespace: 'aws:elb:loadbalancer'
+          OptionName: SSLCertificateId
+          Value: !FindInMap
+            - SSLCertificateToCode
+            - !Ref SSLCertificate
+            - !FindInMap
+              - OctopusToEnvironment
+              - !Ref OctopusEnvironment
+              - Value
+        - Namespace: 'aws:autoscaling:trigger'
+          OptionName: MeasureName
+          Value: CPUUtilization
+        - Namespace: 'aws:autoscaling:trigger'
+          OptionName: Unit
+          Value: Percent
+        - Namespace: 'aws:autoscaling:trigger'
+          OptionName: UpperThreshold
+          Value: '80'
+        - Namespace: 'aws:autoscaling:trigger'
+          OptionName: LowerThreshold
+          Value: '50'

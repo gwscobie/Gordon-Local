@@ -1,0 +1,246 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation template to launch a CouchBase Cluster
+Parameters:
+  AMI:
+    Description: AMI ID
+    Type: 'AWS::EC2::Image::Id'
+    Default: ami-c798afb0
+  VpcId:
+    Type: 'AWS::EC2::VPC::Id'
+    Description: VpcId of your existing Virtual Private Cloud (VPC).
+    Default: vpc-875834e2
+  Subnet1:
+    Type: 'AWS::EC2::Subnet::Id'
+    Default: subnet-dae3bebf
+    Description: The SubnetId where the cluster node 1 will be launched
+  Subnet2:
+    Type: 'AWS::EC2::Subnet::Id'
+    Default: subnet-d7d89da0
+    Description: The SubnetId where the cluster node 2 will be launched
+  SecurityGroups:
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Default: sg-7b54821f
+    Description: The security groups allowed to access these servers
+  InstanceType:
+    Description: Type of EC2 instance to launch.
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c1.xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  PackageURL:
+    Description: URL to couchbase server software package
+    Type: String
+    Default: >-
+      https://s3-eu-west-1.amazonaws.com/file-repo/Couchbase/couchbase-server-enterprise_centos6_x86_64_3.1.0-1803-rel.rpm
+  AdministratorPassword:
+    NoEcho: 'true'
+    Description: Password for REST Administrator API and web-console interface
+    Type: String
+    Default: '123456'
+  RAMPerServer:
+    Description: RAM quota in MB for each node in the cluster
+    Type: Number
+    Default: '500'
+    MinValue: '200'
+  Environment:
+    Description: Type of environment to launch.
+    Type: String
+    Default: DEV
+    AllowedValues:
+      - DEV
+      - STAGE
+      - LIVE
+    ConstraintDescription: must be a valid Octopus Environment instance type.
+  Country:
+    Description: Country code for stack.
+    Type: String
+  KeyName:
+    Description: The EC2 Key Pair to allow Remote Desktop access or SSH to the instances.
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: EC2Connect
+Mappings:
+  EnvironmentToCode:
+    DEV:
+      Value: DV
+    STAGE:
+      Value: ST
+    LIVE:
+      Value: PR
+Resources:
+  NOSQL1:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !Ref AMI
+      InstanceType: !Ref InstanceType
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: 'true'
+          DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId: !Ref Subnet1
+          GroupSet: !Ref SecurityGroups
+      IamInstanceProfile: Software
+      UserData: !Base64
+        'Fn::Join':
+          - ''
+          - - '#!/bin/bash -ex'
+            - |+
+
+            - yum -y install wget openssl098e
+            - |+
+
+            - 'wget '
+            - !Ref PackageURL
+            - |+
+
+            - rpm -i couchbase-server-enterprise*.rpm
+            - |+
+
+            - sleep 30
+            - |+
+
+            - '  echo New couchbase cluster...'
+            - |+
+
+            - '  /opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1'
+            - '    --cluster-init-username=Administrator'
+            - '    --cluster-init-password='
+            - !Ref AdministratorPassword
+            - '    --cluster-init-ramsize='
+            - !Ref RAMPerServer
+            - |+
+
+            - >-
+              curl -X PUT -H 'Content-Type:' --data-binary '{"Status" :
+              "SUCCESS",
+            - '"Reason" : "CouchBaseMasterNode node is ready",'
+            - '"UniqueId" : "couchbase",'
+            - '"Data" : "Done"}'' '
+            - '"'
+            - !Ref WaitForCouchBaseMasterNodeWaitHandle
+            - |
+              "
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref Country
+              - NOSQLC
+              - !FindInMap
+                - EnvironmentToCode
+                - !Ref Environment
+                - Value
+              - '-01'
+        - Key: Team
+          Value: Infra
+        - Key: Role
+          Value: NOSQL
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: AMI
+          Value: !Ref AMI
+        - Key: PackageURL
+          Value: !Ref PackageURL
+  NOSQL2:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !Ref AMI
+      InstanceType: !Ref InstanceType
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: 'true'
+          DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId: !Ref Subnet2
+          GroupSet: !Ref SecurityGroups
+      IamInstanceProfile: Software
+      UserData: !Base64
+        'Fn::Join':
+          - ''
+          - - '#!/bin/bash -ex'
+            - |+
+
+            - yum -y install wget openssl098e
+            - |+
+
+            - 'wget '
+            - !Ref PackageURL
+            - |+
+
+            - rpm -i couchbase-server-enterprise*.rpm
+            - |+
+
+            - sleep 30
+            - |+
+
+            - '  echo Existing couchbase cluster...'
+            - |+
+
+            - '  /opt/couchbase/bin/couchbase-cli rebalance'
+            - '    -u Administrator -p '
+            - !Ref AdministratorPassword
+            - '    -c '
+            - !GetAtt
+              - NOSQL1
+              - PrivateIp
+            - '    --server-add=`hostname -I | tr -d '' ''`:8091'
+            - |+
+
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref Country
+              - NOSQLC
+              - !FindInMap
+                - EnvironmentToCode
+                - !Ref Environment
+                - Value
+              - '-02'
+        - Key: Team
+          Value: Infra
+        - Key: Role
+          Value: NOSQL
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: AMI
+          Value: !Ref AMI
+        - Key: PackageURL
+          Value: !Ref PackageURL
+    DependsOn: WaitForCouchBaseMasterNode
+  WaitForCouchBaseMasterNodeWaitHandle:
+    Type: 'AWS::CloudFormation::WaitConditionHandle'
+    Properties: {}
+  WaitForCouchBaseMasterNode:
+    Type: 'AWS::CloudFormation::WaitCondition'
+    DependsOn: NOSQL1
+    Properties:
+      Handle: !Ref WaitForCouchBaseMasterNodeWaitHandle
+      Timeout: '1200'
+Outputs:
+  RESTWebConsoleURL:
+    Description: The URL for the newly created couchbase node(s)
+    Value: !Join
+      - ''
+      - - 'http://'
+        - !GetAtt
+          - NOSQL1
+          - PublicIp
+        - ':8091'

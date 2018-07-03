@@ -1,0 +1,354 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation template to launch a base VPC.
+Parameters:
+  VpcCidrBlock:
+    Description: Cidr routing block for VPC.
+    Type: String
+    Default: 10.1.0.0/16
+  Subnet1ACidrBlock:
+    Description: Cidr routing block for Subnet 1a.
+    Type: String
+    Default: 10.1.1.0/24
+  Subnet2ACidrBlock:
+    Description: Cidr routing block for Subnet 1b.
+    Type: String
+    Default: 10.1.11.0/24
+  SubnetAAz:
+    Description: Availability zone for subnet 1.
+    Type: String
+  Subnet1BCidrBlock:
+    Description: Cidr routing block for Subnet 2a.
+    Type: String
+    Default: 10.1.2.0/24
+  Subnet2BCidrBlock:
+    Description: Cidr routing block for Subnet 2b.
+    Type: String
+    Default: 10.1.21.0/24
+  SubnetBAz:
+    Description: Availability zone for subnet 2.
+    Type: String
+  NatGatewayAPublicIP:
+    Description: Elastic IP to associated with Nat Gateway A.
+    Type: String
+  NatGatewayBPublicIP:
+    Description: Elastic IP to associated with Nat Gateway B.
+    Type: String
+  Country:
+    Description: Country code for stack.
+    Type: String
+  Environment:
+    Description: Type of environment to launch.
+    Type: String
+    Default: DEV
+    AllowedValues:
+      - DEV
+      - STAGE
+      - LIVE
+      - INFRA
+    ConstraintDescription: Must be a valid Environment instance type.
+Mappings:
+  EnvironmentToCode:
+    DEV:
+      Value: DV
+    STAGE:
+      Value: ST
+    LIVE:
+      Value: PR
+    INFRA:
+      Value: INF
+Resources:
+  IGW:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref Country
+              - IG
+              - !FindInMap
+                - EnvironmentToCode
+                - !Ref Environment
+                - Value
+              - '-01'
+        - Key: Team-Role
+          Value: Infra-Infrastructure
+        - Key: Division
+          Value: Core
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment    
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VpcCidrBlock
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref Country
+              - VPC
+              - !FindInMap
+                - EnvironmentToCode
+                - !Ref Environment
+                - Value
+              - '-01'
+        - Key: Team-Role
+          Value: Infra-Infrastructure
+        - Key: Division
+          Value: Core
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment
+  SUBNET1A:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref SubnetAAz
+      CidrBlock: !Ref Subnet1ACidrBlock
+      MapPublicIpOnLaunch: 'true'
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref Country
+              - !FindInMap
+                - EnvironmentToCode
+                - !Ref Environment
+                - Value
+              - '-01a'
+        - Key: Team-Role
+          Value: Infra-Infrastructure
+        - Key: Division
+          Value: Core
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment
+  SUBNET1B:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref SubnetBAz
+      CidrBlock: !Ref Subnet1BCidrBlock
+      MapPublicIpOnLaunch: 'true'
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref Country
+              - !FindInMap
+                - EnvironmentToCode
+                - !Ref Environment
+                - Value
+              - '-01b'
+        - Key: Team-Role
+          Value: Infra-Infrastructure
+        - Key: Division
+          Value: Core
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment
+  SUBNET2A:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref SubnetAAz
+      CidrBlock: !Ref Subnet2ACidrBlock
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref Country
+              - !FindInMap
+                - EnvironmentToCode
+                - !Ref Environment
+                - Value
+              - '-02a'
+        - Key: Team-Role
+          Value: Infra-Infrastructure
+        - Key: Division
+          Value: Core
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment
+  SUBNET2B:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref SubnetBAz
+      CidrBlock: !Ref Subnet2BCidrBlock
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ''
+            - - !Ref Country
+              - !FindInMap
+                - EnvironmentToCode
+                - !Ref Environment
+                - Value
+              - '-02b'
+        - Key: Team-Role
+          Value: Infra-Infrastructure
+        - Key: Division
+          Value: Core
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment
+  VPCIGW:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      InternetGatewayId: !Ref IGW
+      VpcId: !Ref VPC
+  NATGATEWAYA:
+    Type: 'AWS::EC2::NatGateway'
+    Properties:
+      AllocationId: !Ref NatGatewayAPublicIP
+      SubnetId: !Ref SUBNET1A
+  NATGATEWAYB:
+    Type: 'AWS::EC2::NatGateway'
+    Properties:
+      AllocationId: !Ref NatGatewayBPublicIP
+      SubnetId: !Ref SUBNET1B
+  ROUTETABLE1:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Team-Role
+          Value: Infra-Infrastructure
+        - Key: Division
+          Value: Core
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment
+  DEFAULTROUTE1:
+    Type: 'AWS::EC2::Route'
+    DependsOn: VPCIGW
+    Properties:
+      RouteTableId: !Ref ROUTETABLE1
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref IGW
+  ROUTETABLE2A:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Team-Role
+          Value: Infra-Infrastructure
+        - Key: Division
+          Value: Core
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment
+  DEFAULTROUTE2A:
+    Type: 'AWS::EC2::Route'
+    DependsOn: VPCIGW
+    Properties:
+      RouteTableId: !Ref ROUTETABLE2A
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGATEWAYA
+  ROUTETABLE2B:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Team-Role
+          Value: Infra-Infrastructure
+        - Key: Division
+          Value: Core
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !Ref Environment    M
+  DEFAULTROUTE2B:
+    Type: 'AWS::EC2::Route'
+    DependsOn: VPCIGW
+    Properties:
+      RouteTableId: !Ref ROUTETABLE2B
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGATEWAYB
+  SUBNET1AROUTETABLE:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SUBNET1A
+      RouteTableId: !Ref ROUTETABLE1
+  SUBNET1BROUTETABLE:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SUBNET1B
+      RouteTableId: !Ref ROUTETABLE1
+  SUBNET2AROUTETABLE:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SUBNET2A
+      RouteTableId: !Ref ROUTETABLE2A
+  SUBNET2BROUTETABLE:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SUBNET2B
+      RouteTableId: !Ref ROUTETABLE2B
+Outputs:
+  VpcId:
+    Value: !Ref VPC
+    Export:
+      Name: !Join
+        - ':'
+        - - !Ref 'AWS::StackName'
+          - VPC
+  Subnet1aId:
+    Value: !Ref SUBNET1A
+    Export:
+      Name: !Join
+        - ':'
+        - - !Ref 'AWS::StackName'
+          - SUBNET1A
+  Subnet1bId:
+    Value: !Ref SUBNET1B
+    Export:
+      Name: !Join
+        - ':'
+        - - !Ref 'AWS::StackName'
+          - SUBNET1B
+  Subnet2aId:
+    Value: !Ref SUBNET2A
+    Export:
+      Name: !Join
+        - ':'
+        - - !Ref 'AWS::StackName'
+          - SUBNET2A
+  Subnet2bId:
+    Value: !Ref SUBNET2B
+    Export:
+      Name: !Join
+        - ':'
+        - - !Ref 'AWS::StackName'
+          - SUBNET2B
+  RouteTable1:
+    Value: !Ref ROUTETABLE1
+    Export:
+      Name: !Join
+        - ':'
+        - - !Ref 'AWS::StackName'
+          - ROUTETABLE1
+  RouteTable2a:
+    Value: !Ref ROUTETABLE2A
+    Export:
+      Name: !Join
+        - ':'
+        - - !Ref 'AWS::StackName'
+          - ROUTETABLE2A
+  RouteTable2b:
+    Value: !Ref ROUTETABLE2B
+    Export:
+      Name: !Join
+        - ':'
+        - - !Ref 'AWS::StackName'
+          - ROUTETABLE2B

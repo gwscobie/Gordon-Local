@@ -1,0 +1,423 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Standard RDS server environment, running either Aurora, MySQL, MariaDB,
+  PostgreSQL or MSSQL.
+Parameters:
+  InstanceName:
+    Type: String
+    Description: >-
+      A descriptive name to give the instances, e.g. WEB. This will be prefixed
+      by the Country and suffixed by the Environment automatically.
+  InstanceType:
+    Description: Type of RDS instance to launch.
+    Type: String
+    Default: db.t2.micro
+    AllowedValues:
+      - db.t2.micro
+      - db.t2.small
+      - db.t2.medium
+      - db.t2.large
+      - db.m1.small
+      - db.m3.medium
+      - db.m3.large
+      - db.m3.xlarge
+      - db.m3.2xlarge
+      - db.r3.large
+      - db.r3.xlarge
+      - db.r3.2xlarge
+      - db.r3.4xlarge
+      - db.r3.8xlarge
+    ConstraintDescription: Must be a valid RDS instance type.
+  Engine:
+    Description: Type of RDS Engine
+    Type: String
+    AllowedValues:
+      - MySQL
+      - MariaDB
+      - PostgreSQL
+      - MSSQL-Express
+      - MSSQL-Web
+      - MSSQL-Standard
+    ConstraintDescription: Must be a valid RDS instance type.
+  AllocatedStorage:
+    Type: String
+    Default: '200'
+    Description: Amount of storage in GB's to be allocated to instance.
+  AdministratorPassword:
+    NoEcho: 'true'
+    Description: Master password for RDS instance.
+    Type: String
+    MinLength: 8
+  Division:
+    Description: The division that will be consuming/is provisioning this service.
+    Type: String
+    AllowedValues:
+      - Core
+      - Arcade
+      - Bingo
+      - International
+  Team:
+    Description: The team that will be primarily consuming/is provisioning this service.
+    Type: String
+    AllowedValues:
+      - Client
+      - Engine
+      - Platform
+      - ISA
+      - Infra
+      - Data Engineering
+  Role:
+    Description: The role this service will be helping to complete.
+    Type: String
+    AllowedValues:
+      - Build
+      - Chat
+      - Data
+      - DB
+      - Game
+      - Infrastructure
+      - Reporting
+      - Testing
+      - VPN
+      - Web
+      - Misc
+  Country:
+    Description: >-
+      The country that will be primarily consuming/is provisioning this service
+      or EU for all.
+    Type: String
+    AllowedValues:
+      - DK
+      - ES
+      - EU
+      - IT
+      - NL
+      - PT
+      - UK
+  ChangeNo:
+    Description: >-
+      A change number or JIRA ticket that records the authorisation for the
+      stack to be built or the feature request this stack is part of.
+    Type: String
+Metadata:
+  ProductName: Standard RDS Instance
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Instance Settings
+        Parameters:
+          - InstanceName
+          - Engine
+          - InstanceType
+          - AllocatedStorage
+          - AdministratorPassword
+      - Label:
+          default: Misc Details
+        Parameters:
+          - Division
+          - Team
+          - Role
+          - Country
+          - ChangeNo
+    ParameterLabels:
+      InstanceName:
+        default: Instance Name
+      InstanceType:
+        default: Instance Type
+      AdministratorPassword:
+        default: SqlDBA Password
+      AllocatedStorage:
+        default: Storage (GB)
+      ChangeNo:
+        default: Change Number
+Mappings:
+  EngineToEngineType:
+    Aurora:
+      EngineVersion: 5.6.10a
+      EngineType: aurora
+      License: general-public-license
+    MySQL:
+      EngineVersion: 5.7.11
+      EngineType: mysql
+      License: general-public-license
+    MariaDB:
+      EngineVersion: 10.1.14
+      EngineType: mariadb
+      License: general-public-license
+    PostgreSQL:
+      EngineVersion: 9.6.1
+      EngineType: postgres
+      License: general-public-license
+    MSSQL-Express:
+      EngineVersion: 12.00.5000.0.v1
+      EngineType: sqlserver-ex
+      License: license-included
+    MSSQL-Web:
+      EngineVersion: 12.00.5000.0.v1
+      EngineType: sqlserver-web
+      License: license-included
+    MSSQL-Standard:
+      EngineVersion: 12.00.5000.0.v1
+      EngineType: sqlserver-se
+      License: license-included
+    MSSQL-Enterprise:
+      EngineVersion: 12.00.5000.0.v1
+      EngineType: sqlserver-ee
+      License: license-included
+  AccountVariables:
+    '160821142532':
+      Environment: INFRA
+      EnvironmentCode: PR
+      OctopusEnvironment: DeployToEMEA
+      VpcId: vpc-e7d19182
+      PrivateSubnetA: subnet-bc2d18d9
+      PrivateSubnetB: subnet-d47e23a3
+      PublicSubnetA: subnet-d52d18b0
+      PublicSubnetB: subnet-ee7e2399
+      AdminSecurityGroup: sg-f5bbfb8c
+    075458894664:
+      Environment: DEV
+      EnvironmentCode: DV
+      OctopusEnvironment: DeployToDev
+      VpcId: vpc-70226d15
+      PrivateSubnetA: subnet-70184107
+      PrivateSubnetB: subnet-4ebfce17
+      PublicSubnetA: subnet-71184106
+      PublicSubnetB: subnet-41bfce18
+      AdminSecurityGroup: sg-29d16550
+    094345010951:
+      Environment: STAGE
+      EnvironmentCode: ST
+      OctopusEnvironment: DeployToStaging
+      VpcId: vpc-3bace55e
+      PrivateSubnetA: subnet-9f2279e8
+      PrivateSubnetB: subnet-edfb88b4
+      PublicSubnetA: subnet-902279e7
+      PublicSubnetB: subnet-e98efdb0
+      AdminSecurityGroup: sg-ee7cf097
+    '189470795347':
+      Environment: LIVE
+      EnvironmentCode: PR
+      OctopusEnvironment: DeployToLive
+      VpcId: vpc-2aea414f
+      PrivateSubnetA: subnet-2a3a164f
+      PrivateSubnetB: subnet-3796c240
+      PublicSubnetA: subnet-066a2663
+      PublicSubnetB: subnet-1ea42869
+      AdminSecurityGroup: sg-1c30aa65
+    '630702119774':
+      Environment: PLAY
+      EnvironmentCode: PLY
+      OctopusEnvironment: DeployToPreDev
+      VpcId: vpc-1353a174
+      PrivateSubnetA: subnet-83cff7db
+      PrivateSubnetB: subnet-f36d9194
+      PublicSubnetA: subnet-64c3fb3c
+      PublicSubnetB: subnet-4b728e2c
+      AdminSecurityGroup: sg-65413d1c
+    '843352679768':
+      Environment: OPSPLAY
+      EnvironmentCode: OPG
+      OctopusEnvironment: OpsPlayground
+      VpcId: vpc-b35ee0d4
+      PrivateSubnetA: subnet-e1d169a8
+      PrivateSubnetB: subnet-4ebb4415
+      PublicSubnetA: subnet-74d46c3d
+      PublicSubnetB: subnet-6cba4537
+      AdminSecurityGroup: sg-9c8234e4
+  SecurityGroups:
+    '160821142532':
+      ADMIN: sg-f5bbfb8c
+      ALIENV: sg-42b6f63b
+      CHATLOG: sg-95b8f8ec
+      DC: sg-52b8f82b
+      EPO: sg-e3b9f99a
+      OD: sg-cebcfcb7
+      OPSBLOG: sg-0ebafa77
+      PLAYG: sg-05b7f77c
+      PMP: sg-fab8f883
+      PRTG: sg-7cbafa05
+      RDS: sg-7fb7f706
+      SOGEI: sg-989cd6e1
+      TC: sg-89bbfbf0
+      VPN: sg-6b93d912
+      WEB: sg-a8b7f7d1
+    075458894664:
+      ADMIN: sg-29d16550
+      APP: sg-d1eb5fa8
+      CHAT: sg-aed763d7
+      CMS: sg-de255aa7
+      DC: sg-36d1654f
+      GAME: sg-2bd66252
+      JS: sg-29d66250
+      LOGAPI: sg-59d76320
+      NAT: sg-48d06431
+      NOSQL: sg-05d2667c
+      PROXY: sg-f6d5618f
+      RDS: sg-deeb5fa7
+      REDIS: sg-17d7636e
+      SOGEI: sg-fa174183
+      WEBRES: sg-8fd561f6
+      WEB: sg-76d4600f
+    094345010951:
+      ADMIN: sg-ee7cf097
+      APP: sg-2861ed51
+      CHAT: sg-627ef21b
+      CMS: sg-c52f50bc
+      DC: sg-2b61ed52
+      JS: sg-6b60ec12
+      GAME: sg-e661ed9f
+      LOGAPI: sg-6a60ec13
+      NAT: sg-aa63efd3
+      NOSQL: sg-8361edfa
+      PROXY: sg-4c66ea35
+      RDS: sg-c37df1ba
+      REDIS: sg-e17cf098
+      SOGEI: sg-f3cfb38a
+      WEBRES: sg-e761ed9e
+      WEB: sg-0160ec78
+      WHOS: sg-21fe8958
+    '189470795347':
+      ADMIN: sg-1c30aa65
+      APP: sg-862bb1ff
+      CHAT: sg-1d30aa64
+      CMS: sg-842bb1fd
+      DC: sg-a337adda
+      GAME: sg-9631abef
+      JS: sg-622ab01b
+      LOGAPI: sg-4d31ab34
+      NAT: sg-a42ab0dd
+      NOSQL: sg-8a34aef3
+      PROXY: sg-bb28b2c2
+      RDS: sg-4c31ab35
+      REDIS: sg-a037add9
+      SOGEI: sg-1e30aa67
+      WEBRES: sg-c435afbd
+      WEB: sg-da31aba3
+      WHOS: sg-6337ad1a
+    '630702119774':
+      ADMIN: sg-65413d1c
+      APP: sg-65413d1c
+      CHAT: sg-65413d1c
+      CMS: sg-65413d1c
+      DC: sg-65413d1c
+      GAME: sg-65413d1c
+      JS: sg-65413d1c
+      LOGAPI: sg-65413d1c
+      NAT: sg-65413d1c
+      NOSQL: sg-65413d1c
+      PROXY: sg-65413d1c
+      RDS: sg-65413d1c
+      REDIS: sg-65413d1c
+      SOGEI: sg-65413d1c
+      WEBRES: sg-65413d1c
+      WEB: sg-65413d1c
+      WHOS: sg-65413d1c
+    '843352679768':
+      ADMIN: sg-9c8234e4
+      APP: sg-ee843296
+      CHAT: sg-848335fc
+      CMS: sg-1a853362
+      DC: sg-b88533c0
+      GAME: sg-4f8e3837
+      JS: sg-8d8432f5
+      LOGAPI: sg-6682341e
+      NAT: sg-2380365b
+      NOSQL: sg-6582341d
+      PROXY: sg-0782347f
+      RDS: sg-eb8e3893
+      REDIS: sg-e0833598
+      SOGEI: sg-ed843295
+      WEBRES: sg-ea8e3892
+      WEB: sg-2480365c
+Resources:
+  RDSSUBNETGROUP:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: Private Subnet Group
+      SubnetIds:
+        - !FindInMap
+          - AccountVariables
+          - !Ref 'AWS::AccountId'
+          - PrivateSubnetA
+        - !FindInMap
+          - AccountVariables
+          - !Ref 'AWS::AccountId'
+          - PrivateSubnetB
+  RDS:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      AllocatedStorage: !Ref AllocatedStorage
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      BackupRetentionPeriod: 7
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !Ref InstanceType
+      DBInstanceIdentifier: !Join
+        - ''
+        - - !Ref Country
+          - !Ref InstanceName
+          - c
+          - !FindInMap
+            - AccountVariables
+            - !Ref 'AWS::AccountId'
+            - EnvironmentCode
+          - '-01'
+      DBSubnetGroupName: !Ref RDSSUBNETGROUP
+      LicenseModel: !FindInMap
+        - EngineToEngineType
+        - !Ref Engine
+        - License
+      Engine: !FindInMap
+        - EngineToEngineType
+        - !Ref Engine
+        - EngineType
+      EngineVersion: !FindInMap
+        - EngineToEngineType
+        - !Ref Engine
+        - EngineVersion
+      MasterUsername: sqldba
+      MasterUserPassword: !Ref AdministratorPassword
+      PreferredMaintenanceWindow: 'mon:05:00-mon:06:00'
+      PreferredBackupWindow: '04:00-05:00'
+      PubliclyAccessible: false
+      StorageType: gp2
+      StorageEncrypted: true
+      VPCSecurityGroups:
+        - !FindInMap
+          - AccountVariables
+          - !Ref 'AWS::AccountId'
+          - AdminSecurityGroup
+        - !FindInMap
+          - SecurityGroups
+          - !Ref 'AWS::AccountId'
+          - RDS
+      Tags:
+        - Key: Country
+          Value: !Ref Country
+        - Key: Environment
+          Value: !FindInMap
+            - AccountVariables
+            - !Ref 'AWS::AccountId'
+            - Environment
+        - Key: Division
+          Value: !Ref Division
+        - Key: Team-Role
+          Value: !Join
+            - '-'
+            - - !Ref Team
+              - !Ref Role
+        - Key: Source
+          Value: Service Catalog
+Outputs:
+  RDSInstanceId:
+    Value: !Ref RDS
+  RDSEndpoint:
+    Value: !GetAtt
+      - RDS
+      - Endpoint.Address
+  RDSEndpointPort:
+    Value: !GetAtt
+      - RDS
+      - Endpoint.Port
+Rules: {}

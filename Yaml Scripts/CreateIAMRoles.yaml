@@ -1,0 +1,120 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation template to create IAM roles.
+Parameters:
+  Team:
+    Description: Team code for stack.
+    Type: String
+Resources:
+  LiamRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: 'arn:aws:iam::160821142532:root'
+            Action: 'sts:AssumeRole'
+      Path: /
+      RoleName: !Join
+        - ''
+        - - AWS_
+          - !Ref Team
+  LiamPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      Roles:
+        - !Ref LiamRole
+      ManagedPolicyName: !Join
+        - ''
+        - - AWS_
+          - !Ref Team
+          - Policy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'support:*'
+            Resource: '*'
+            Effect: Allow
+          - Sid: Stmt1447766990000
+            Effect: Deny
+            Action:
+              - 'iam:AddUserToGroup'
+              - 'iam:AddClientIDToOpenIDConnectProvider'
+              - 'iam:ChangePassword'
+              - 'iam:CreateAccessKey'
+              - 'iam:CreateAccountAlias'
+              - 'iam:CreateGroup'
+              - 'iam:CreateLoginProfile'
+              - 'iam:CreateOpenIDConnectProvider'
+              - 'iam:CreatePolicy'
+              - 'iam:CreatePolicyVersion'
+              - 'iam:CreateRole'
+              - 'iam:CreateSAMLProvider'
+              - 'iam:CreateUser'
+              - 'iam:CreateVirtualMFADevice'
+              - 'iam:DeactivateMFADevice'
+              - 'iam:DeleteAccessKey'
+              - 'iam:DeleteAccountAlias'
+              - 'iam:DeleteAccountPasswordPolicy'
+              - 'iam:DeleteGroup'
+              - 'iam:DeleteGroupPolicy'
+              - 'iam:DeleteLoginProfile'
+              - 'iam:DeleteOpenIDConnectProvider'
+              - 'iam:DeletePolicy'
+              - 'iam:DeletePolicyVersion'
+              - 'iam:DeleteRole'
+              - 'iam:DeleteRolePolicy'
+              - 'iam:DeleteSAMLProvider'
+              - 'iam:DeleteSSHPublicKey'
+              - 'iam:DeleteUser'
+              - 'iam:DeleteUserPolicy'
+              - 'iam:DeleteVirtualMFADevice'
+              - 'iam:DetachGroupPolicy'
+              - 'iam:DetachRolePolicy'
+              - 'iam:DetachUserPolicy'
+              - 'iam:EnableMFADevice'
+              - 'iam:GenerateCredentialReport'
+              - 'iam:PutGroupPolicy'
+              - 'iam:PutRolePolicy'
+              - 'iam:PutUserPolicy'
+              - 'iam:RemoveClientIDFromOpenIDConnectProvider'
+              - 'iam:RemoveUserFromGroup'
+              - 'iam:ResyncMFADevice'
+              - 'iam:SetDefaultPolicyVersion'
+              - 'iam:SimulateCustomPolicy'
+              - 'iam:SimulatePrincipalPolicy'
+              - 'iam:UpdateAccessKey'
+              - 'iam:UpdateAccountPasswordPolicy'
+              - 'iam:UpdateAssumeRolePolicy'
+              - 'iam:UpdateGroup'
+              - 'iam:UpdateLoginProfile'
+              - 'iam:UpdateOpenIDConnectProviderThumbprint'
+              - 'iam:UpdateSAMLProvider'
+              - 'iam:UpdateSSHPublicKey'
+              - 'iam:UpdateUser'
+              - 'iam:UploadSSHPublicKey'
+            Resource:
+              - '*'
+  LiamPolicy2:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      Roles:
+        - !Ref LiamRole
+      ManagedPolicyName: !Join
+        - ''
+        - - AWS_
+          - !Ref Team
+          - Policy_ReadOnly
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'aws-portal:*Billing'
+              - 'aws-portal:*Usage'
+              - 'aws-portal:*PaymentMethods'
+              - 'budgets:ViewBudget'
+              - 'budgets:ModifyBudget'
+            Effect: Allow
+            Resource: '*'

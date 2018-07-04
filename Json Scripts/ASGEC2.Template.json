@@ -9,7 +9,7 @@
         "AMI": {
             "Description": "AMI ID",
             "Type": "AWS::EC2::Image::Id",
-            "Default": "ami-4f0e4a36"
+            "Default": "ami-4f0ex"
         },
         "MinSize": {
           "Type": "Number",
@@ -45,13 +45,13 @@
           "Description": "SSL certificate to put on the ELB.",
           "Type": "String",
           "AllowedValues": [
-              "wildcard-arcade-uk",
-              "wildcard-tombola-com",
-              "wildcard-tombola-it",
-              "wildcard-tombola-es",
-              "wildcard-tombola-pt",
-              "wildcard-tombola-se",
-              "wildcard-tombola-uk"
+              "wildcard-xxx-xx",
+              "wildcard-xxx-xx",
+              "wildcard-xxx-xx",
+              "wildcard-xxx-xx",
+              "wildcard-xxx-xx",
+              "wildcard-xxx-xx",
+              "wildcard-xxx-xx"
           ]
         },
         "OctopusRoles": {
@@ -191,88 +191,82 @@
     },
     "Mappings": {
       "SSLCertificateToCode": {
-        "wildcard-tombola-uk": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/f12bfaf4-2354-46ed-87a9-fb07c117b769", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/280125e6-09a6-470c-a587-cfdcc8317cc5", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/6bab9d4a-a7b6-4dab-b3b3-303c7a3390de", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/1a347d01-e41f-41ca-963d-a1b8279fe0de", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/ea14c595-1bdd-4037-98c4-0d5dd65d3313", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/378f64a7-c347-4e80-b068-7c99b1dfb4f9" },
-        "wildcard-tombola-it": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/dbc84553-7245-4d36-97f9-8458f2dfc2cf", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/add747f2-5540-4679-860c-6410c80f34f1", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/1a503a35-2e8a-4c10-a4d5-1299e655398b", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/bdb2a7a2-a9d7-4a29-93c0-56917b6bf208", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/b943fe91-954b-4bf8-814e-5230011f634b", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/72054d5e-3e8c-4eb5-9a65-e101dd07fa58" },
-        "wildcard-tombola-es": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/d8f99f82-d7ab-45bd-981f-567c2abb1f5d", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/d4110165-1a7c-4168-80f2-1e4e020228ca", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/2e4ffa43-da25-4dc1-bdb7-c22780355662", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/8570651c-4141-49ee-8250-8972660d08a5", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/1bbd90ad-3b86-4f4e-99a4-3befe13819c1", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/feef62fb-6cac-4c4f-97f4-adde1d01ff7b" },
-        "wildcard-tombola-pt": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/54251bb7-2db6-4bf0-a5ef-7924498820c1", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/5ddb85a2-1ffd-48c4-bd8d-ab51ddc3fccb", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/278e06a5-b5d0-4e5e-b6ed-6a2dab0c8047", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/bf85c614-5763-43a3-b332-d0f8e07deb88", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/ec05f804-621f-41e3-963f-a15649907f45", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/b1a134e4-ae13-40c0-857e-72bcce4bc7fc" },
-        "wildcard-tombola-se": { "INFRA": "", "OPSPLAY": "", "PLAY": "", "DEV": "", "STAGE": "", "LIVE": "" },
-        "wildcard-tombola-nl": { "INFRA": "", "OPSPLAY": "", "PLAY": "", "DEV": "", "STAGE": "", "LIVE": "" },
-        "wildcard-tombola-com": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/b8eecc28-bfca-4e58-a8b8-8c89b4653a45", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/d8f25ad7-6b64-4f87-9f97-7bceeec92643", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/eadafb9e-a9be-440c-b689-8ed87e613902", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/5ea6c86b-eff9-454d-acbe-811e866ea890", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/88c64072-8976-41af-9b49-092c370f7033", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/182dae2f-6d7f-4d9d-b633-5175a14949b8" },
-        "wildcard-arcade-uk": { "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/b16e9141-7263-4c4c-93fc-66d96f7f2a64", "OPSPLAY": "arn:aws:acm:eu-west-1:843352679768:certificate/40eca684-4611-46f4-b1cf-b7d1a0dbce97", "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/86b4b2be-b208-4c87-89b9-c79d47efce95", "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/c5295396-0a74-4bd4-a752-b34fe4deb91e", "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/67f1bcf6-a1d4-45a8-878c-aeec8a3d066a", "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/b76b8ab1-8bc5-47d9-9a24-ca50e5d332a4" }
+        "wildcard-tombola-uk": { "INFRA": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/f12bfaf4-2354-46ed-87a9-fb07c117b769", "OPSPLAY": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/280125e6-09a6-470c-a587-cfdcc8317cc5", "PLAY": "arn:aws:acm:eu-west-1:xxxxxxxxxxxx:certificate/6bab9d4a-a7b6-4dab-b3b3-303c7a3390de", "DEV": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/1a347d01-e41f-41ca-963d-a1b8279fe0de", "STAGE": "arn:aws:acm:eu-west-1:xxxxxxxxxxx:certificate/ea14c595-1bdd-4037-98c4-0d5dd65d3313", "LIVE": "arn:aws:acm:eu-west-1:xxxxxxxxxx:certificate/378f64a7-c347-4e80-b068-7c99b1dfb4f9" },
+        
       },
       "AccountVariables":
       {
-        "160821142532":
+        "160xx":
         {
           "Environment": "INFRA",
           "EnvironmentCode": "PR",
           "OctopusEnvironment": "DeployToEMEA",
-          "VpcId": "vpc-e7d19182",
-          "PrivateSubnetA": "subnet-bc2d18d9",
-          "PrivateSubnetB": "subnet-d47e23a3",
-          "PublicSubnetA": "subnet-d52d18b0",
-          "PublicSubnetB": "subnet-ee7e2399",
-          "AdminSecurityGroup": "sg-f5bbfb8c"
+          "VpcId": "vpc-xxxxxxx",
+          "PrivateSubnetA": "subnet-xxxx",
+          "PrivateSubnetB": "subnet-xxxx",
+          "PublicSubnetA": "subnet-xxxx",
+          "PublicSubnetB": "subnet-xxxx",
+          "AdminSecurityGroup": "sg-xxxxx"
         },
-        "075458894664":
+        "075xx":
         {
           "Environment": "DEV",
           "EnvironmentCode": "DV",
           "OctopusEnvironment": "DeployToDev",
-          "VpcId": "vpc-70226d15",
-          "PrivateSubnetA": "subnet-70184107",
-          "PrivateSubnetB": "subnet-4ebfce17",
-          "PublicSubnetA": "subnet-71184106",
-          "PublicSubnetB": "subnet-41bfce18",
-          "AdminSecurityGroup": "sg-29d16550"
+          "VpcId": "vpc-70x",
+          "PrivateSubnetA": "subnet-701x",
+          "PrivateSubnetB": "subnet-4ebx",
+          "PublicSubnetA": "subnet-7118x",
+          "PublicSubnetB": "subnet-41bfx",
+          "AdminSecurityGroup": "sg-29dx"
         },
-        "094345010951":
+        "094xx":
         {
           "Environment": "STAGE",
           "EnvironmentCode": "ST",
           "OctopusEnvironment": "DeployToStaging",
-          "VpcId": "vpc-3bace55e",
-          "PrivateSubnetA": "subnet-9f2279e8",
-          "PrivateSubnetB": "subnet-edfb88b4",
-          "PublicSubnetA": "subnet-902279e7",
-          "PublicSubnetB": "subnet-e98efdb0",
-          "AdminSecurityGroup": "sg-ee7cf097"
+          "VpcId": "vpc-3bax",
+          "PrivateSubnetA": "subnet-9f2x",
+          "PrivateSubnetB": "subnet-edx",
+          "PublicSubnetA": "subnet-902x",
+          "PublicSubnetB": "subnet-e98x",
+          "AdminSecurityGroup": "sg-ee7x"
         },
-        "189470795347":
+        "18xxxxxxxx":
         {
           "Environment": "LIVE",
           "EnvironmentCode": "PR",
           "OctopusEnvironment": "DeployToLive",
-          "VpcId": "vpc-2aea414f",
-          "PrivateSubnetA": "subnet-2a3a164f",
-          "PrivateSubnetB": "subnet-3796c240",
-          "PublicSubnetA": "subnet-066a2663",
-          "PublicSubnetB": "subnet-1ea42869",
-          "AdminSecurityGroup": "sg-1c30aa65"
+          "VpcId": "vpc-2aexf",
+          "PrivateSubnetA": "subnet-2a3a1x",
+          "PrivateSubnetB": "subnet-379x",
+          "PublicSubnetA": "subnet-066ax3",
+          "PublicSubnetB": "subnet-1ex",
+          "AdminSecurityGroup": "sg-1c3x"
         },
-        "630702119774":
+        "630xxxxxxxxx":
         {
           "Environment": "PLAY",
           "EnvironmentCode": "PLY",
           "OctopusEnvironment": "DeployToPreDev",
-          "VpcId": "vpc-1353a174",
-          "PrivateSubnetA": "subnet-83cff7db",
-          "PrivateSubnetB": "subnet-f36d9194",
-          "PublicSubnetA": "subnet-64c3fb3c",
-          "PublicSubnetB": "subnet-4b728e2c",
-          "AdminSecurityGroup": "sg-65413d1c"
+          "VpcId": "vpc-x",
+          "PrivateSubnetA": "subnet-83cfx",
+          "PrivateSubnetB": "subnet-f36x",
+          "PublicSubnetA": "subnet-64cx",
+          "PublicSubnetB": "subnet-4b7x",
+          "AdminSecurityGroup": "sg-654x"
         },
-        "843352679768":
+        "xxxxxxxxxxxxx":
         {
           "Environment": "OPSPLAY",
           "EnvironmentCode": "OPG",
           "OctopusEnvironment": "OpsPlayground",
-          "VpcId": "vpc-b35ee0d4",
-          "PrivateSubnetA": "subnet-e1d169a8",
-          "PrivateSubnetB": "subnet-4ebb4415",
-          "PublicSubnetA": "subnet-74d46c3d",
-          "PublicSubnetB": "subnet-6cba4537",
-          "AdminSecurityGroup": "sg-9c8234e4"
+          "VpcId": "vpc-b35x",
+          "PrivateSubnetA": "subnet-e1x",
+          "PrivateSubnetB": "subnet-4ebx",
+          "PublicSubnetA": "subnet-74d4x",
+          "PublicSubnetB": "subnet-6cbx",
+          "AdminSecurityGroup": "sg-9cx"
         }
       }
     },
@@ -289,7 +283,7 @@
                                 "if((Test-Path \"C:\\Assets\") -ne $true) {", "\n",
                                 "   New-Item -Path \"C:\\Assets\" -ItemType \"directory\"", "\n",
                                 "}", "\n",
-                                "Copy-S3Object -SourceBucket tom-filerepo-pr -SourceKey Tombola/AWS/BuildMeScripts/JoinDC/KickStart.ps1 C:\\Assets\\KickStart.ps1", "\n",
+                                "Copy-S3Object -SourceBucket xxxx-filerepo-pr -SourceKey xxx/AWS/BuildMeScripts/JoinDC/KickStart.ps1 C:\\Assets\\KickStart.ps1", "\n",
                                 "& C:\\Assets\\KickStart.ps1"," -Environment ", { "Fn::FindInMap": [ "AccountVariables", { "Ref": "AWS::AccountId" }, "EnvironmentCode" ] }, " >> C:\\Assets\\KickStart.log", "\n",
                                 "</powershell>", "\n"
                             ]

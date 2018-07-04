@@ -17,18 +17,18 @@
     },
     "ALBSubnets": {
         "Type": "List<AWS::EC2::Subnet::Id>",
-        "Default": "subnet-dae3bebf",
+        "Default": "subnet-daexxx",
         "Description": "The Subnets where the ALB will be launched"
     },
     "InstanceSubnets": {
         "Type": "List<AWS::EC2::Subnet::Id>",
-        "Default": "subnet-dae3bebf",
+        "Default": "subnet-dae3x",
         "Description": "The Subnets where the Cluster Instances will be launched"
     },
     "AMI": {
         "Description": "AMI ID",
         "Type": "AWS::EC2::Image::Id",
-        "Default": "ami-86d8b8ff"
+        "Default": "ami-86d8bx"
     },
     "DesiredCapacity":{
       "Type":"Number",
@@ -47,7 +47,7 @@
     },
     "AdminSecurityGroup": {
         "Type": "AWS::EC2::SecurityGroup::Id",
-        "Default": "sg-02298865",
+        "Default": "sg-0229x",
         "Description": "The administrative security group for this cluster"
     },
     "InstanceType":{
@@ -79,13 +79,13 @@
       "Description": "SSL Certificate to be used on External ALB",
       "Type": "String",
       "AllowedValues": [
-          "wildcard-tombola-com",
-          "wildcard-tombola-uk",
-          "wildcard-tombola-it",
-          "wildcard-tombola-es",
-          "wildcard-arcade-uk"
+          "wildcard-xxxxx",
+          "wildcard-xxxxx",
+          "wildcard-xxxxx",
+          "wildcard-xxxxx",
+          "wildcard-xxxxx"
       ],
-      "Default": "wildcard-tombola-com"
+      "Default": "wildcard-xxxxx"
     }
   },
   "Mappings":{
@@ -97,46 +97,46 @@
     },
     "SSLCertificateToCode": {
       "wildcard-tombola-uk": {
-        "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/f12bfaf4-2354-46ed-87a9-fb07c117b769",
-        "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/6bab9d4a-a7b6-4dab-b3b3-303c7a3390de",
-        "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/1a347d01-e41f-41ca-963d-a1b8279fe0de",
-        "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/ea14c595-1bdd-4037-98c4-0d5dd65d3313",
-        "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/378f64a7-c347-4e80-b068-7c99b1dfb4f9"
+        "INFRA": "arn:aws:acm:eu-west-1:xxxxxxx:certificate/f12bfaf4-2354-46ed-87a9-fb07c117b769",
+        "PLAY": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/6bab9d4a-a7b6-4dab-b3b3-303c7a3390de",
+        "DEV": "arn:aws:acm:eu-west-1:xxxxxxxxxxx:certificate/1a347d01-e41f-41ca-963d-a1b8279fe0de",
+        "STAGE": "arn:aws:acm:eu-west-1:xxxxxxxxxxx1:certificate/ea14c595-1bdd-4037-98c4-0d5dd65d3313",
+        "LIVE": "arn:aws:acm:eu-west-1:xxxxxxx:certificate/378f64a7-c347-4e80-b068-7c99b1dfb4f9"
       },
       "wildcard-tombola-it": {
-        "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/dbc84553-7245-4d36-97f9-8458f2dfc2cf",
-        "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/1a503a35-2e8a-4c10-a4d5-1299e655398b",
-        "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/bdb2a7a2-a9d7-4a29-93c0-56917b6bf208",
-        "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/b943fe91-954b-4bf8-814e-5230011f634b",
-        "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/72054d5e-3e8c-4eb5-9a65-e101dd07fa58"
+        "INFRA": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/dbc84553-7245-4d36-97f9-8458f2dfc2cf",
+        "PLAY": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/1a503a35-2e8a-4c10-a4d5-1299e655398b",
+        "DEV": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/bdb2a7a2-a9d7-4a29-93c0-56917b6bf208",
+        "STAGE": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/b943fe91-954b-4bf8-814e-5230011f634b",
+        "LIVE": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/72054d5e-3e8c-4eb5-9a65-e101dd07fa58"
       },
       "wildcard-tombola-es": {
-        "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/d8f99f82-d7ab-45bd-981f-567c2abb1f5d",
-        "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/2e4ffa43-da25-4dc1-bdb7-c22780355662",
-        "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/8570651c-4141-49ee-8250-8972660d08a5",
-        "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/1bbd90ad-3b86-4f4e-99a4-3befe13819c1",
-        "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/feef62fb-6cac-4c4f-97f4-adde1d01ff7b"
+        "INFRA": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/d8f99f82-d7ab-45bd-981f-567c2abb1f5d",
+        "PLAY": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/2e4ffa43-da25-4dc1-bdb7-c22780355662",
+        "DEV": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/8570651c-4141-49ee-8250-8972660d08a5",
+        "STAGE": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/1bbd90ad-3b86-4f4e-99a4-3befe13819c1",
+        "LIVE": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/feef62fb-6cac-4c4f-97f4-adde1d01ff7b"
       },
       "wildcard-tombola-pt": {
-        "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/54251bb7-2db6-4bf0-a5ef-7924498820c1",
-        "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/278e06a5-b5d0-4e5e-b6ed-6a2dab0c8047",
-        "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/bf85c614-5763-43a3-b332-d0f8e07deb88",
-        "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/ec05f804-621f-41e3-963f-a15649907f45",
-        "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/b1a134e4-ae13-40c0-857e-72bcce4bc7fc"
+        "INFRA": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/54251bb7-2db6-4bf0-a5ef-7924498820c1",
+        "PLAY": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/278e06a5-b5d0-4e5e-b6ed-6a2dab0c8047",
+        "DEV": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/bf85c614-5763-43a3-b332-d0f8e07deb88",
+        "STAGE": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/ec05f804-621f-41e3-963f-a15649907f45",
+        "LIVE": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/b1a134e4-ae13-40c0-857e-72bcce4bc7fc"
       },
       "wildcard-tombola-com": {
-        "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/b8eecc28-bfca-4e58-a8b8-8c89b4653a45",
-        "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/eadafb9e-a9be-440c-b689-8ed87e613902",
-        "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/5ea6c86b-eff9-454d-acbe-811e866ea890",
-        "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/88c64072-8976-41af-9b49-092c370f7033",
-        "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/182dae2f-6d7f-4d9d-b633-5175a14949b8"
+        "INFRA": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/b8eecc28-bfca-4e58-a8b8-8c89b4653a45",
+        "PLAY": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/eadafb9e-a9be-440c-b689-8ed87e613902",
+        "DEV": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/5ea6c86b-eff9-454d-acbe-811e866ea890",
+        "STAGE": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/88c64072-8976-41af-9b49-092c370f7033",
+        "LIVE": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/182dae2f-6d7f-4d9d-b633-5175a14949b8"
       },
       "wildcard-arcade-uk": {
-        "INFRA": "arn:aws:acm:eu-west-1:160821142532:certificate/b16e9141-7263-4c4c-93fc-66d96f7f2a64",
-        "PLAY": "arn:aws:acm:eu-west-1:630702119774:certificate/86b4b2be-b208-4c87-89b9-c79d47efce95",
-        "DEV": "arn:aws:acm:eu-west-1:075458894664:certificate/c5295396-0a74-4bd4-a752-b34fe4deb91e",
-        "STAGE": "arn:aws:acm:eu-west-1:094345010951:certificate/67f1bcf6-a1d4-45a8-878c-aeec8a3d066a",
-        "LIVE": "arn:aws:acm:eu-west-1:189470795347:certificate/b76b8ab1-8bc5-47d9-9a24-ca50e5d332a4"
+        "INFRA": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/b16e9141-7263-4c4c-93fc-66d96f7f2a64",
+        "PLAY": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/86b4b2be-b208-4c87-89b9-c79d47efce95",
+        "DEV": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/c5295396-0a74-4bd4-a752-b34fe4deb91e",
+        "STAGE": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/67f1bcf6-a1d4-45a8-878c-aeec8a3d066a",
+        "LIVE": "arn:aws:acm:eu-west-1:xxxxxxxxxxxxx:certificate/b76b8ab1-8bc5-47d9-9a24-ca50e5d332a4"
       }
     }
   },

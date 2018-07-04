@@ -13,7 +13,7 @@ Parameters:
     AllowedValues:
       - Core
       - Arcade
-      - Bingo
+      - xxxx
       - International
   Team:
     Description: The team that will be primarily consuming/is provisioning this service.
@@ -90,66 +90,46 @@ Mappings:
     OPG:
       Value: opg
   AccountVariables:
-    '160821142532':
+    'xxxxxxx':
       Environment: INFRA
       EnvironmentCode: PR
       OctopusEnvironment: DeployToEMEA
-      VpcId: vpc-e7d19182
-      PrivateSubnetA: subnet-bc2d18d9
-      PrivateSubnetB: subnet-d47e23a3
-      PublicSubnetA: subnet-d52d18b0
-      PublicSubnetB: subnet-ee7e2399
-      AdminSecurityGroup: sg-f5bbfb8c
-    075458894664:
+      VpcId: vpc-xxxxx
+      PrivateSubnetA: subnet-xxx
+      PrivateSubnetB: subnet-xxx
+      PublicSubnetA: subnet-xxx
+      PublicSubnetB: subnet-xxx
+      AdminSecurityGroup: sg-xxxxx
+    '07545889xxxxx':
       Environment: DEV
       EnvironmentCode: DV
       OctopusEnvironment: DeployToDev
-      VpcId: vpc-70226d15
-      PrivateSubnetA: subnet-70184107
-      PrivateSubnetB: subnet-4ebfce17
-      PublicSubnetA: subnet-71184106
-      PublicSubnetB: subnet-41bfce18
-      AdminSecurityGroup: sg-29d16550
-    094345010951:
+      VpcId: vpc-xxxxx
+      PrivateSubnetA: subnet-xxx
+      PrivateSubnetB: subnet-xxx
+      PublicSubnetA: subnet-xxx
+      PublicSubnetB: subnet-xxx
+      AdminSecurityGroup: sg-xxxxx
+    '094345xxxx':
       Environment: STAGE
       EnvironmentCode: ST
       OctopusEnvironment: DeployToStaging
-      VpcId: vpc-3bace55e
-      PrivateSubnetA: subnet-9f2279e8
-      PrivateSubnetB: subnet-edfb88b4
-      PublicSubnetA: subnet-902279e7
-      PublicSubnetB: subnet-e98efdb0
-      AdminSecurityGroup: sg-ee7cf097
-    '189470795347':
+      VpcId: vpc-xxxxx
+      PrivateSubnetA: subnet-xxx
+      PrivateSubnetB: subnet-xxx
+      PublicSubnetA: subnet-xxx
+      PublicSubnetB: subnet-xxx
+      AdminSecurityGroup: sg-xxxxx
+    '189470x':
       Environment: LIVE
       EnvironmentCode: PR
       OctopusEnvironment: DeployToLive
-      VpcId: vpc-2aea414f
-      PrivateSubnetA: subnet-2a3a164f
-      PrivateSubnetB: subnet-3796c240
-      PublicSubnetA: subnet-066a2663
-      PublicSubnetB: subnet-1ea42869
-      AdminSecurityGroup: sg-1c30aa65
-    '630702119774':
-      Environment: PLAY
-      EnvironmentCode: PLY
-      OctopusEnvironment: DeployToPreDev
-      VpcId: vpc-1353a174
-      PrivateSubnetA: subnet-83cff7db
-      PrivateSubnetB: subnet-f36d9194
-      PublicSubnetA: subnet-64c3fb3c
-      PublicSubnetB: subnet-4b728e2c
-      AdminSecurityGroup: sg-65413d1c
-    '843352679768':
-      Environment: OPSPLAY
-      EnvironmentCode: OPG
-      OctopusEnvironment: OpsPlayground
-      VpcId: vpc-b35ee0d4
-      PrivateSubnetA: subnet-e1d169a8
-      PrivateSubnetB: subnet-4ebb4415
-      PublicSubnetA: subnet-74d46c3d
-      PublicSubnetB: subnet-6cba4537
-      AdminSecurityGroup: sg-9c8234e4
+      VpcId: vpc-xxxxx
+      PrivateSubnetA: subnet-xxx
+      PrivateSubnetB: subnet-xxx
+      PublicSubnetA: subnet-xxx
+      PublicSubnetB: subnet-xxx
+      AdminSecurityGroup: sg-xxxxx    
 Resources:
   BUCKET:
     Type: 'AWS::S3::Bucket'
@@ -194,7 +174,7 @@ Resources:
           - Sid: Allow Ops Access
             Effect: Allow
             Principal:
-              AWS: 'arn:aws:iam::160821142532:root'
+              AWS: 'arn:aws:iam::xxxxxxx:root'
             Action:
               - 's3:List*'
               - 's3:Get*'

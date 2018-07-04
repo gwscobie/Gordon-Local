@@ -4,10 +4,10 @@ Parameters:
   AMI:
     Description: AMI ID
     Type: 'AWS::EC2::Image::Id'
-    Default: ami-ce7373d3
+    Default: ami-ce737xx
   Subnet1:
     Type: 'AWS::EC2::Subnet::Id'
-    Default: subnet-dae3bebf
+    Default: subnet-dae3xxxx
     Description: The SubnetId where the DC 1 will be launched
   DC1PrivateIP:
     Description: The private IP address to be assigned to primary DC (required).
@@ -15,7 +15,7 @@ Parameters:
     Default: ''
   Subnet2:
     Type: 'AWS::EC2::Subnet::Id'
-    Default: subnet-d7d89da0
+    Default: subnet-d7d8xx
     Description: The SubnetId where the cluster node 2 will be launched
   DC2PrivateIP:
     Description: The private IP address to be assigned to the secondary DC (required).
@@ -23,7 +23,7 @@ Parameters:
     Default: ''
   SecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
-    Default: sg-7b54821f
+    Default: sg-xxxx
     Description: The security groups allowed to access these servers
   LocalAdministratorPassword:
     NoEcho: 'true'
@@ -126,8 +126,8 @@ Resources:
             - |+
 
             - >-
-              Copy-S3Object -Region eu-west-1 -SourceBucket tom-filerepo-pri
-              -SourceKey Tombola/AWS/BuildMeScripts/JoinDC/CreateDC.ps1
+              Copy-S3Object -Region eu-west-1 -SourceBucket xxx-filerepo-pri
+              -SourceKey xxxx/AWS/BuildMeScripts/JoinDC/CreateDC.ps1
               C:\Assets\CreateDC.ps1
             - |+
 
@@ -160,7 +160,7 @@ Resources:
 
             - >-
               $localAdminCred = New-Object
-              System.Management.Automation.PSCredential("administrator",
+              System.Management.Auxxxation.PSCredential("administrator",
               (ConvertTo-SecureString "$password" -AsPlainText -Force))
             - |+
 
@@ -264,8 +264,8 @@ Resources:
             - |+
 
             - >-
-              Copy-S3Object -Region eu-west-1 -SourceBucket tom-filerepo-pri
-              -SourceKey Tombola/AWS/BuildMeScripts/JoinDC/JoinDC.ps1
+              Copy-S3Object -Region eu-west-1 -SourceBucket xxx-filerepo-pri
+              -SourceKey xxxx/AWS/BuildMeScripts/JoinDC/JoinDC.ps1
               C:\Assets\JoinDC.ps1
             - |+
 
@@ -298,7 +298,7 @@ Resources:
 
             - >-
               $localAdminCred = New-Object
-              System.Management.Automation.PSCredential("administrator",
+              System.Management.Auxxxation.PSCredential("administrator",
               (ConvertTo-SecureString "$password" -AsPlainText -Force))
             - |+
 

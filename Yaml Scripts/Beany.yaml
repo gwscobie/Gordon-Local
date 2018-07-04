@@ -281,8 +281,8 @@ Resources:
           SSLCertificateId: >-
             arn:aws:acm:eu-west-1:094345010951:certificate/88c64072-8976-41af-9b49-092c370f7033
       Subnets:
-        - subnet-e98efdb0
-        - subnet-902279e7
+        - subnet-xxxxx
+        - subnet-xxxxx
       CrossZone: true
       Policies: []
       HealthCheck:
@@ -299,7 +299,7 @@ Resources:
   AWSEBLoadBalancerSecurityGroup:
     Properties:
       GroupDescription: Load Balancer Security Group
-      VpcId: vpc-3bace55e
+      VpcId: vpc-3xxxx
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
           FromPort: '443'
@@ -318,7 +318,7 @@ Resources:
   AWSEBSecurityGroup:
     Properties:
       GroupDescription: VPC Security Group
-      VpcId: vpc-3bace55e
+      VpcId: vpc-3baxxxx
       SecurityGroupIngress:
         - FromPort: '80'
           ToPort: '80'
@@ -396,7 +396,7 @@ Resources:
           files:
             'C:\Temp\MSI\Newrelic.msi':
               source: >-
-                https://s3-eu-west-1.amazonaws.com/tom-filerepo-pr/NewRelic/NET+Agent/NewRelicAgent.msi
+                https://s3-eu-west-1.amazonaws.com/xxx-filerepo-pr/NewRelic/NET+Agent/NewRelicAgent.msi
         Hook-PostConfigDeploy:
           commands:
             hooks:
@@ -468,7 +468,7 @@ Resources:
               waitAfterCompletion: 0
               command: >-
                 msiexec.exe /i "C:\Temp\MSI\Newrelic.msi" /q
-                NR_LICENSE_KEY=615dcdcc40081ae380380624f8e0711ced3152ba
+                NR_LICENSE_KEY=ba
                 INSTALLLEVEL=50
             020-newrelic-start-iis:
               defaults: !FindInMap
@@ -793,7 +793,7 @@ Resources:
             AWSEBAgentId: !Ref AWSEBAgentId
             AWSEBReferrerId: !Ref AWSEBReferrerId
         _LaunchS3URL: >-
-          https://s3-eu-west-1.amazonaws.com/elasticbeanstalk-eu-west-1-094345010951/resources/environments/e-pmaenhkt37/UKUMBCST-01_LaunchFile
+          https://s3-eu-west-1.amazonaws.com/elasticbeanstalk-eu-west-1-xxxx/resources/environments/e-pmaenhkt37/UKUMBCST-01_LaunchFile
         _EBExtensionFilePaths:
           postbuild_1_tombola_uk_umb: >-
             Content/D_C/ElasticBeanstalkBootstrapper/bootstrapper/.ebextensions/010-kickstart.config
@@ -976,102 +976,102 @@ Mappings:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-c488dfab
+      hvm: ami-c48xxx
     eu-west-3:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-a5fd4bd8
+      hvm: ami-a5fxxx
     DEVO:
       pv: ''
-      graphics: ami-013e197b
-      gpu: ami-013e197b
-      hvm: ami-013e197b
+      graphics: ami-013exxxx
+      gpu: ami-013exxxx
+      hvm: ami-013exxxx
     eu-west-2:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-9f677cfb
+      hvm: ami-9f67xx
     eu-west-1:
       pv: ''
-      graphics: ami-cc821eb5
-      gpu: ami-cc821eb5
-      hvm: ami-cc821eb5
+      graphics: ami-cc821xxx
+      gpu: ami-cc821xxx
+      hvm: ami-cc821xxx
     ap-northeast-3:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-fbece386
+      hvm: ami-fbecxx
     ap-northeast-2:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-0b4eee65
+      hvm: ami-0b4eexx
     ap-northeast-1:
       pv: ''
-      graphics: ami-1a7ee47c
+      graphics: ami-1a7x
       gpu: ''
-      hvm: ami-1a7ee47c
+      hvm: ami-1a7ex
     sa-east-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-d6c785ba
+      hvm: ami-d6c7x
     ca-central-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-41ab2e25
+      hvm: ami-41abx
     cn-north-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-bfe439d2
+      hvm: ami-bfe4x
     us-gov-west-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-88d45de9
+      hvm: ami-88dx
     ap-southeast-1:
       pv: ''
-      graphics: ami-c83944b4
+      graphics: ami-c8394x
       gpu: ''
-      hvm: ami-c83944b4
+      hvm: ami-c83944x
     ap-southeast-2:
       pv: ''
-      graphics: ami-30a55952
+      graphics: ami-30a5x
       gpu: ''
-      hvm: ami-30a55952
+      hvm: ami-30a55x
     eu-central-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-3204995d
+      hvm: ami-32049x
     us-east-1:
       pv: ''
-      graphics: ami-013e197b
-      gpu: ami-013e197b
-      hvm: ami-013e197b
+      graphics: ami-013exxxx
+      gpu: ami-013exxxx
+      hvm: ami-013exxxx
     us-east-2:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-02446e67
+      hvm: ami-024x
     us-west-1:
       pv: ''
-      graphics: ami-92fefdf2
+      graphics: ami-92fex
       gpu: ''
-      hvm: ami-92fefdf2
+      hvm: ami-92fefdx
     cn-northwest-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-5e7b6f3c
+      hvm: ami-5e7b6x
     us-west-2:
       pv: ''
-      graphics: ami-afe051d7
+      graphics: ami-afe05x
       gpu: ''
-      hvm: ami-afe051d7
+      hvm: ami-afe0x
   AWSEBOptions:
     options:
       OperatingSystem: Windows
@@ -1111,94 +1111,94 @@ Mappings:
       hvm: ami-a5fd4bd8
     DEVO:
       pv: ''
-      graphics: ami-013e197b
-      gpu: ami-013e197b
-      hvm: ami-013e197b
+      graphics: ami-013exxxx
+      gpu: ami-013exxxx
+      hvm: ami-013exxxx
     eu-west-2:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-9f677cfb
+      hvm: ami-9f67xx
     eu-west-1:
-      pv: ami-8d5b2bf4
-      graphics: ami-8d5b2bf4
-      gpu: ami-8d5b2bf4
-      hvm: ami-8d5b2bf4
+      pv: ami-8d5bx
+      graphics: ami-8d5bx
+      gpu: ami-8d5b2x
+      hvm: ami-8d5b2bx
     ap-northeast-3:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-fbece386
+      hvm: ami-fbece3x
     ap-northeast-2:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-0b4eee65
+      hvm: ami-0b4eex
     ap-northeast-1:
       pv: ''
-      graphics: ami-1a7ee47c
+      graphics: ami-1a7ex
       gpu: ''
-      hvm: ami-1a7ee47c
+      hvm: ami-1a7x
     sa-east-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-d6c785ba
+      hvm: ami-d6c78x
     ca-central-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-41ab2e25
+      hvm: ami-41abx
     cn-north-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-bfe439d2
+      hvm: ami-bfex
     us-gov-west-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-88d45de9
+      hvm: ami-88d4x
     ap-southeast-1:
       pv: ''
-      graphics: ami-c83944b4
+      graphics: ami-c839x
       gpu: ''
-      hvm: ami-c83944b4
+      hvm: ami-c83944bx
     ap-southeast-2:
       pv: ''
-      graphics: ami-30a55952
+      graphics: ami-30a55x
       gpu: ''
-      hvm: ami-30a55952
+      hvm: ami-30a55x
     eu-central-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-3204995d
+      hvm: ami-32049x
     us-east-1:
       pv: ''
-      graphics: ami-013e197b
-      gpu: ami-013e197b
-      hvm: ami-013e197b
+      graphics: ami-013exxxx
+      gpu: ami-013exxxx
+      hvm: ami-013exxxx
     us-east-2:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-02446e67
+      hvm: ami-02446x
     us-west-1:
       pv: ''
-      graphics: ami-92fefdf2
+      graphics: ami-92fx
       gpu: ''
-      hvm: ami-92fefdf2
+      hvm: ami-92fefdx
     cn-northwest-1:
       pv: ''
       graphics: ''
       gpu: ''
-      hvm: ami-5e7b6f3c
+      hvm: ami-5e7b6fxc
     us-west-2:
       pv: ''
-      graphics: ami-afe051d7
+      graphics: ami-afe0x
       gpu: ''
-      hvm: ami-afe051d7
+      hvm: ami-afe051x
   AWSEBAWSInstanceTypeFamily2Arch:
     r3:
       Arch: hvm

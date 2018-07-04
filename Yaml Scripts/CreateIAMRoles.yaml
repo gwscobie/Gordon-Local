@@ -13,7 +13,7 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              AWS: 'arn:aws:iam::160821142532:root'
+              AWS: 'arn:aws:iam::1608211xxxx:root'
             Action: 'sts:AssumeRole'
       Path: /
       RoleName: !Join
@@ -101,7 +101,7 @@ Resources:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
       Roles:
-        - !Ref LiamRole
+        - !Ref Gordonole
       ManagedPolicyName: !Join
         - ''
         - - AWS_

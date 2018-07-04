@@ -4,10 +4,10 @@ Parameters:
   AMI:
     Description: AMI ID
     Type: 'AWS::EC2::Image::Id'
-    Default: ami-c798afb0
+    Default: ami-c798afbx
   Subnet1:
     Type: 'AWS::EC2::Subnet::Id'
-    Default: subnet-dae3bebf
+    Default: subnet-dae3bebx
     Description: The SubnetId where the instance will be launched.
   RedisPrivateIP:
     Description: The private IP address to be assigned to the redis instance.
@@ -15,7 +15,7 @@ Parameters:
     Default: ''
   SecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
-    Default: sg-7b54821f
+    Default: sg-7b54821x
     Description: The security groups allowed to access these servers
   InstanceType:
     Description: Type of EC2 instance to launch.
@@ -103,7 +103,7 @@ Resources:
             - yum -y install redis
             - |+
 
-            - 'wget https://tom-filerepo-pri.s3.amazonaws.com/Redis/redis.conf'
+            - 'wget https://xxxxfilerepo-pri.s3.amazonaws.com/Redis/redis.conf'
             - |+
 
             - cp redis.conf /etc/redis.conf

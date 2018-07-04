@@ -141,83 +141,83 @@ Metadata:
         default: Change Number
 Mappings:
   AccountVariables:
-    '160821142532':
+    '1608211xxxxx':
       Environment: INFRA
       EnvironmentCode: PR
       OctopusEnvironment: DeployToEMEA
-      VpcId: vpc-e7d19182
-      PrivateSubnetA: subnet-bc2d18d9
-      PrivateSubnetB: subnet-d47e23a3
-      PublicSubnetA: subnet-d52d18b0
-      PublicSubnetB: subnet-ee7e2399
-      AdminSecurityGroup: sg-f5bbfb8c
-    075458894664:
+      VpcId: vpc-xxxx
+      PrivateSubnetA: subnet-bc2d1xxx
+      PrivateSubnetB: subnet-bc2d1xxx
+      PublicSubnetA: subnet-bc2d1xxx
+      PublicSubnetB: subnet-bc2d1xxx
+      AdminSecurityGroup: sg-xxxx
+    075458x4:
       Environment: DEV
       EnvironmentCode: DV
-      VpcId: vpc-70226d15
-      PrivateSubnetA: subnet-70184107
-      PrivateSubnetB: subnet-4ebfce17
-      PublicSubnetA: subnet-71184106
-      PublicSubnetB: subnet-41bfce18
-      AdminSecurityGroup: sg-29d16550
-    094345010951:
+      VpcId: vpc-70226x
+      PrivateSubnetA: subnet-7018x
+      PrivateSubnetB: subnet-4ebfcx
+      PublicSubnetA: subnet-711841x
+      PublicSubnetB: subnet-41bfcex
+      AdminSecurityGroup: sg-29d16x
+    09434501x:
       Environment: STAGE
       EnvironmentCode: ST
       VpcId: vpc-3bace55e
-      PrivateSubnetA: subnet-9f2279e8
-      PrivateSubnetB: subnet-edfb88b4
-      PublicSubnetA: subnet-902279e7
-      PublicSubnetB: subnet-e98efdb0
-      AdminSecurityGroup: sg-ee7cf097
-    '189470795347':
+      PrivateSubnetA: subnet-9f227x
+      PrivateSubnetB: subnet-edfb8x
+      PublicSubnetA: subnet-902279ex
+      PublicSubnetB: subnet-e98efx
+      AdminSecurityGroup: sg-ee7cx
+    '18947079x':
       Environment: LIVE
       EnvironmentCode: PR
-      VpcId: vpc-2aea414f
-      PrivateSubnetA: subnet-2a3a164f
-      PrivateSubnetB: subnet-3796c240
-      PublicSubnetA: subnet-066a2663
-      PublicSubnetB: subnet-1ea42869
-      AdminSecurityGroup: sg-1c30aa65
-    '630702119774':
+      VpcId: vpc-2aea4x
+      PrivateSubnetA: subnet-2a3a1x
+      PrivateSubnetB: subnet-3796cx
+      PublicSubnetA: subnet-066a266x
+      PublicSubnetB: subnet-1ea428x
+      AdminSecurityGroup: sg-1c30ax
+    '63070211x':
       Environment: PLAY
       EnvironmentCode: PLY
-      VpcId: vpc-1353a174
-      PrivateSubnetA: subnet-83cff7db
-      PrivateSubnetB: subnet-f36d9194
-      AdminSecurityGroup: sg-65413d1c
-    '843352679768':
+      VpcId: vpc-1353x
+      PrivateSubnetA: subnet-83cffx
+      PrivateSubnetB: subnet-f36d919x
+      AdminSecurityGroup: sg-6541x
+    '84335267x':
       Environment: OPS-PLAY
       EnvironmentCode: PLY
       VpcId: vpc-b35ee0d4
-      PrivateSubnetA: subnet-e1d169a8
-      PrivateSubnetB: subnet-4ebb4415
-      AdminSecurityGroup: sg-9c8234e4
+      PrivateSubnetA: subnet-ex
+      PrivateSubnetB: subnet-4ebfcx
+      AdminSecurityGroup: sg-9c8x
   SecurityGroups:
-    '160821142532':
-      ADMIN: sg-f5bbfb8c
-      ALIENV: sg-42b6f63b
-      CHATLOG: sg-95b8f8ec
-      DC: sg-52b8f82b
-      EPO: sg-e3b9f99a
-      OD: sg-cebcfcb7
-      OPSBLOG: sg-0ebafa77
-      PLAYG: sg-05b7f77c
-      PMP: sg-fab8f883
-      PRTG: sg-7cbafa05
-      RDS: sg-7fb7f706
-      SOGEI: sg-989cd6e1
-      TC: sg-89bbfbf0
-      VPN: sg-6b93d912
-      WEB: sg-a8b7f7d1
-    075458894664:
-      ADMIN: sg-29d16550
-      APP: sg-d1eb5fa8
-      CHAT: sg-aed763d7
-      CMS: sg-de255aa7
-      DC: sg-36d1654f
-      GAME: sg-2bd66252
-      JS: sg-29d66250
-      LOGAPI: sg-59d76320
+    '1608211xxxxx':
+      ADMIN: sg-xxxx
+      ALIENV: sg-42b6fx
+      CHATLOG: sg-95b8f8x
+      DC: sg-52b8f8xx
+      EPO: sg-e3b9fxa
+      OD: sg-cebcfcx
+      OPSBLOG: sg-0ebax
+      PLAYG: sg-05b7f7x
+      PMP: sg-fab8f88x
+      PRTG: sg-7cbafax
+      RDS: sg-7fb7f70x
+      SOGEI: sg-989cd6e1x
+      TC: sg-89bbfbf0x
+      VPN: sg-6b93d912x
+      WEB: sg-a8b7f7d1x
+    075458894x:
+      ADMIN: sg-29d16x
+      APP: sg-d1eb5fx8
+      CHAT: sg-aed76x7
+      CMS: sg-de255ax
+      DC: sg-36d165xf
+      GAME: sg-2bd662x
+      JS: sg-29d662x
+      LOGAPI: sg-59d7x
       NAT: sg-48d06431
       NOSQL: sg-05d2667c
       PROXY: sg-f6d5618f

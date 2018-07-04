@@ -239,7 +239,7 @@ Parameters:
     Type: String
   DomainDNSName:
     AllowedPattern: "[a-zA-Z0-9\\-]+\\..+"
-    Default: TOMBOLA.EMEA
+    Default: xxxx.EMEA
     Description: Fully qualified domain name (FQDN) e.g. example.com
     MaxLength: '25'
     MinLength: '3'
@@ -252,7 +252,7 @@ Parameters:
     Type: AWS::EC2::SecurityGroup::Id
   DomainNetBIOSName:
     AllowedPattern: "[a-zA-Z0-9\\-]+"
-    Default: TOMBOLAEMEA
+    Default: TOMBx
     Description: NetBIOS name of the domain (up to 15 characters) for users of earlier
       versions of Windows e.g. EXAMPLE
     MaxLength: '15'
@@ -273,14 +273,14 @@ Parameters:
       after it launches
     Type: AWS::EC2::KeyPair::KeyName
   PrivateSubnet1ID:
-    Description: ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-a0246dcd)
+    Description: ID of the private subnet 1 in Availability Zone 1 (e.g., subnet-a0246x)
     Type: AWS::EC2::Subnet::Id
   PrivateSubnet2ID:
-    Description: ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-a0246dcd)
+    Description: ID of the private subnet 2 in Availability Zone 2 (e.g., subnet-a0246x)
     Type: AWS::EC2::Subnet::Id
   PrivateSubnet3ID:
     Description: "(Optional) ID of the optional private subnet 3 in Availability Zone
-      3 (e.g., subnet-a0246dcd)"
+      3 (e.g., subnet-a0246x)"
     Type: AWS::EC2::Subnet::Id
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
@@ -450,7 +450,7 @@ Parameters:
     Type: String
   WSFCFileServerPrivateIP:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    Default: 192.168.226.50
+    Default: 192.1xxx
     Description: Primary private IP for the fileserver located in Availability Zone
       1
     Type: String
@@ -474,18 +474,18 @@ Parameters:
     Type: String
   WSFCNode1PrivateIP1:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    Default: 192.168.226.53
+    Default: 192.168.2xx
     Description: Primary private IP for the first WSFC Node located in Availability
       Zone 1
     Type: String
   WSFCNode1PrivateIP2:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    Default: 192.168.226.54
+    Default: 192.168.xx
     Description: Secondary private IP for WSFC cluster on first WSFC Node
     Type: String
   WSFCNode1PrivateIP3:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    Default: 192.168.226.55
+    Default: 192.168xxx
     Description: Third private IP for Availability Group Listener on first WSFC Node
     Type: String
   WSFCNode2InstanceType:
@@ -508,18 +508,18 @@ Parameters:
     Type: String
   WSFCNode2PrivateIP1:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    Default: 192.168.227.53
+    Default: 192.168xx53
     Description: Primary private IP for the second WSFC Node located in Availability
       Zone 2
     Type: String
   WSFCNode2PrivateIP2:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    Default: 192.168.227.54
+    Default: 192.168.xx
     Description: Secondary private IP for WSFC cluster on second WSFC Node
     Type: String
   WSFCNode2PrivateIP3:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    Default: 192.168.227.55
+    Default: 192.16xx
     Description: Third private IP for Availability Group Listener on second WSFC Node
     Type: String
   WSFCNode3InstanceType:
@@ -542,18 +542,18 @@ Parameters:
     Type: String
   WSFCNode3PrivateIP1:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    Default: 192.168.229.51
+    Default: 192.16xx
     Description: Primary private IP for the optional third WSFC Node located in Availability
       Zone 3
     Type: String
   WSFCNode3PrivateIP2:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    Default: 192.168.229.52
+    Default: 192.168.xx
     Description: Secondary private IP for WSFC cluster on optional third WSFC Node
     Type: String
   WSFCNode3PrivateIP3:
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    Default: 192.168.229.53
+    Default: 192.168.2xx
     Description: Third private IP for Availability Group Listener on optional third
       WSFC Node
     Type: String
@@ -718,14 +718,14 @@ Mappings:
       WS2016FULLBASE: Windows_Server-2016-English-Full-Base-2018.01.12
       WS2016FULLSQL2017ENT: Windows_Server-2016-English-Full-SQL_2017_Enterprise-2018.01.12
     ap-northeast-1:
-      WS2012R2: ami-1a7ee47c
-      WS2012R2SQL2014SP2ENT: ami-7b2eb41d
-      WS2012R2SQL2016SP1ENT: ami-7975ef1f
-      WS2016FULLBASE: ami-157fe573
-      WS2016FULLSQL2017ENT: ami-04148e62
+      WS2012R2: ami-1a7xxx
+      WS2012R2SQL2014SP2ENT: ami-7b2ebxx
+      WS2012R2SQL2016SP1ENT: ami-7975xx
+      WS2016FULLBASE: ami-157fexx
+      WS2016FULLSQL2017ENT: ami-0414xex
     ap-northeast-2:
-      WS2012R2: ami-0b4eee65
-      WS2012R2SQL2014SP2ENT: ami-2b55f545
+      WS2012R2: ami-0b4ex
+      WS2012R2SQL2014SP2ENT: ami-2b55x
       WS2012R2SQL2016SP1ENT: ami-ee4eee80
       WS2016FULLBASE: ami-054eee6b
       WS2016FULLSQL2017ENT: ami-7052f21e

@@ -165,171 +165,170 @@ Mappings:
       EngineType: sqlserver-ee
       License: license-included
   AccountVariables:
-    '160821142532':
+    '16082114xxx':
       Environment: INFRA
       EnvironmentCode: PR
       OctopusEnvironment: DeployToEMEA
-      VpcId: vpc-e7d19182
-      PrivateSubnetA: subnet-bc2d18d9
-      PrivateSubnetB: subnet-d47e23a3
-      PublicSubnetA: subnet-d52d18b0
-      PublicSubnetB: subnet-ee7e2399
-      AdminSecurityGroup: sg-f5bbfb8c
-    075458894664:
+      VpcId: vpc-e7d1xxx
+      PrivateSubnetA: subnet-bc2d1xx
+      PrivateSubnetB: subnet-bc2d1xx
+      PublicSubnetA: subnet-bc2d1xx
+      PublicSubnetB: subnet-bc2d1xx
+      AdminSecurityGroup: sg-xxx
+    075458894xx4:
       Environment: DEV
       EnvironmentCode: DV
       OctopusEnvironment: DeployToDev
-      VpcId: vpc-70226d15
-      PrivateSubnetA: subnet-70184107
-      PrivateSubnetB: subnet-4ebfce17
-      PublicSubnetA: subnet-71184106
-      PublicSubnetB: subnet-41bfce18
-      AdminSecurityGroup: sg-29d16550
-    094345010951:
+      VpcId: vpc-70226x
+      PrivateSubnetA: subnet-7018x
+      PrivateSubnetB: subnet-4ebfx
+      PublicSubnetA: subnet-71184x
+      PublicSubnetB: subnet-41bfx
+      AdminSecurityGroup: sg-29d1x
+    09434501xxx:
       Environment: STAGE
       EnvironmentCode: ST
       OctopusEnvironment: DeployToStaging
-      VpcId: vpc-3bace55e
-      PrivateSubnetA: subnet-9f2279e8
-      PrivateSubnetB: subnet-edfb88b4
-      PublicSubnetA: subnet-902279e7
-      PublicSubnetB: subnet-e98efdb0
-      AdminSecurityGroup: sg-ee7cf097
-    '189470795347':
+      VpcId: vpc-3bacx
+      PrivateSubnetA: subnet-9f22x
+      PrivateSubnetB: subnet-edfbx
+      PublicSubnetA: subnet-9022x
+      PublicSubnetB: subnet-e98efx
+      AdminSecurityGroup: sg-ee7cfxx
+    '189470795xxx':
       Environment: LIVE
       EnvironmentCode: PR
       OctopusEnvironment: DeployToLive
       VpcId: vpc-2aea414f
-      PrivateSubnetA: subnet-2a3a164f
-      PrivateSubnetB: subnet-3796c240
-      PublicSubnetA: subnet-066a2663
-      PublicSubnetB: subnet-1ea42869
-      AdminSecurityGroup: sg-1c30aa65
-    '630702119774':
+      PrivateSubnetA: subnet-2a3x
+      PrivateSubnetB: subnet-3796x
+      PublicSubnetA: subnet-0xxa2x
+      PublicSubnetB: subnet-1ea4x
+      AdminSecurityGroup: sg-1c30xx
+    '6307021xxx':
       Environment: PLAY
       EnvironmentCode: PLY
       OctopusEnvironment: DeployToPreDev
       VpcId: vpc-1353a174
-      PrivateSubnetA: subnet-83cff7db
-      PrivateSubnetB: subnet-f36d9194
-      PublicSubnetA: subnet-64c3fb3c
-      PublicSubnetB: subnet-4b728e2c
-      AdminSecurityGroup: sg-65413d1c
-    '843352679768':
+      PrivateSubnetA: subnet-83cx
+      PrivateSubnetB: subnet-f36x
+      PublicSubnetA: subnet-64c3x
+      PublicSubnetB: subnet-4b728xc
+      AdminSecurityGroup: sg-6541xx
+    '843352xxxx':
       Environment: OPSPLAY
       EnvironmentCode: OPG
       OctopusEnvironment: OpsPlayground
       VpcId: vpc-b35ee0d4
-      PrivateSubnetA: subnet-e1d169a8
-      PrivateSubnetB: subnet-4ebb4415
-      PublicSubnetA: subnet-74d46c3d
-      PublicSubnetB: subnet-6cba4537
-      AdminSecurityGroup: sg-9c8234e4
+      PrivateSubnetA: subnet-e1d16x
+      PrivateSubnetB: subnet-4ebx
+      PublicSubnetA: subnet-74d4x
+      PublicSubnetB: subnet-6cbx
+      AdminSecurityGroup: sg-9c823xx
   SecurityGroups:
-    '160821142532':
-      ADMIN: sg-f5bbfb8c
-      ALIENV: sg-42b6f63b
-      CHATLOG: sg-95b8f8ec
-      DC: sg-52b8f82b
-      EPO: sg-e3b9f99a
-      OD: sg-cebcfcb7
-      OPSBLOG: sg-0ebafa77
-      PLAYG: sg-05b7f77c
-      PMP: sg-fab8f883
-      PRTG: sg-7cbafa05
-      RDS: sg-7fb7f706
-      SOGEI: sg-989cd6e1
-      TC: sg-89bbfbf0
-      VPN: sg-6b93d912
-      WEB: sg-a8b7f7d1
-    075458894664:
-      ADMIN: sg-29d16550
-      APP: sg-d1eb5fa8
-      CHAT: sg-aed763d7
-      CMS: sg-de255aa7
-      DC: sg-36d1654f
-      GAME: sg-2bd66252
-      JS: sg-29d66250
-      LOGAPI: sg-59d76320
-      NAT: sg-48d06431
-      NOSQL: sg-05d2667c
-      PROXY: sg-f6d5618f
-      RDS: sg-deeb5fa7
-      REDIS: sg-17d7636e
-      SOGEI: sg-fa174183
-      WEBRES: sg-8fd561f6
-      WEB: sg-76d4600f
-    094345010951:
-      ADMIN: sg-ee7cf097
-      APP: sg-2861ed51
-      CHAT: sg-627ef21b
-      CMS: sg-c52f50bc
-      DC: sg-2b61ed52
-      JS: sg-6b60ec12
-      GAME: sg-e661ed9f
-      LOGAPI: sg-6a60ec13
-      NAT: sg-aa63efd3
-      NOSQL: sg-8361edfa
-      PROXY: sg-4c66ea35
-      RDS: sg-c37df1ba
-      REDIS: sg-e17cf098
-      SOGEI: sg-f3cfb38a
-      WEBRES: sg-e761ed9e
-      WEB: sg-0160ec78
-      WHOS: sg-21fe8958
-    '189470795347':
-      ADMIN: sg-1c30aa65
-      APP: sg-862bb1ff
-      CHAT: sg-1d30aa64
-      CMS: sg-842bb1fd
-      DC: sg-a337adda
-      GAME: sg-9631abef
-      JS: sg-622ab01b
-      LOGAPI: sg-4d31ab34
-      NAT: sg-a42ab0dd
-      NOSQL: sg-8a34aef3
-      PROXY: sg-bb28b2c2
-      RDS: sg-4c31ab35
-      REDIS: sg-a037add9
-      SOGEI: sg-1e30aa67
-      WEBRES: sg-c435afbd
-      WEB: sg-da31aba3
-      WHOS: sg-6337ad1a
-    '630702119774':
-      ADMIN: sg-65413d1c
-      APP: sg-65413d1c
-      CHAT: sg-65413d1c
-      CMS: sg-65413d1c
-      DC: sg-65413d1c
-      GAME: sg-65413d1c
-      JS: sg-65413d1c
-      LOGAPI: sg-65413d1c
-      NAT: sg-65413d1c
-      NOSQL: sg-65413d1c
-      PROXY: sg-65413d1c
-      RDS: sg-65413d1c
-      REDIS: sg-65413d1c
-      SOGEI: sg-65413d1c
-      WEBRES: sg-65413d1c
-      WEB: sg-65413d1c
-      WHOS: sg-65413d1c
-    '843352679768':
-      ADMIN: sg-9c8234e4
-      APP: sg-ee843296
-      CHAT: sg-848335fc
-      CMS: sg-1a853362
-      DC: sg-b88533c0
-      GAME: sg-4f8e3837
-      JS: sg-8d8432f5
-      LOGAPI: sg-6682341e
-      NAT: sg-2380365b
-      NOSQL: sg-6582341d
-      PROXY: sg-0782347f
-      RDS: sg-eb8e3893
-      REDIS: sg-e0833598
-      SOGEI: sg-ed843295
-      WEBRES: sg-ea8e3892
-      WEB: sg-2480365c
+    '16082114xxx':
+      ADMIN: sg-xxx
+      ALIENV: sg-42b6fx
+      CHATLOG: sg-95b8x
+      DC: sg-52b8fx
+      EPO: sg-e3b9x
+      OD: sg-cebcfx
+      OPSBLOG: sg-0ebax
+      PLAYG: sg-05b7x
+      PMP: sg-fab8fx
+      PRTG: sg-7cbafx
+      RDS: sg-7fb7fx
+      SOGEI: sg-989cdx
+      TC: sg-89bbfx
+      VPN: sg-6b93dx
+      WEB: sg-a8b7fxx
+    075458894xx4:
+      ADMIN: sg-29d1x
+      APP: sg-d1ebx
+      CHAT: sg-aed76x
+      CMS: sg-de255x
+      DC: sg-36d1654xx
+      GAME: sg-2bdxx
+      JS: sg-29dxx2x
+      LOGAPI: sg-59d7x
+      NAT: sg-48d0x
+      NOSQL: sg-05d2xx
+      PROXY: sg-f6d561x
+      RDS: sg-deeb5fx
+      REDIS: sg-17d763x
+      SOGEI: sg-fa174x
+      WEBRES: sg-8fd56x
+      WEB: sg-76d460x
+    09434501xxx:
+      ADMIN: sg-ee7cx7
+      APP: sg-2861x
+      CHAT: sg-627x
+      CMS: sg-c52x
+      DC: sg-2b61x
+      JS: sg-6b60x
+      GAME: sg-exxx
+      LOGAPI: sg-6a60ex
+      NAT: sg-aa63ex
+      NOSQL: sg-8361ex
+      RDS: sg-c37dx
+      REDIS: sg-e17x8
+      SOGEI: sg-f3cfx
+      WEBRES: sg-e761edxe
+      WEB: sg-0160ecx
+      WHOS: sg-21fe8x
+    '189470795xxx':
+      ADMIN: sg-1c30x
+      APP: sg-862bx
+      CHAT: sg-1d30x
+      CMS: sg-842bx
+      DC: sg-a337x
+      GAME: sg-963x
+      JS: sg-622abx
+      LOGAPI: sg-4d3x
+      NAT: sg-a42ab0dx
+      NOSQL: sg-8a34axf3
+      PROXY: sg-bb28x
+      RDS: sg-4c31ax
+      REDIS: sg-a0x
+      SOGEI: sg-1e30aa6x
+      WEBRES: sg-c435afbxd
+      WEB: sg-da31abx
+      WHOS: sg-6337ax
+    '6307021xxx':
+      ADMIN: sg-6541xx
+      APP: sg-6541xx
+      CHAT: sg-6541xx
+      CMS: sg-6541xx
+      DC: sg-6541xx
+      GAME: sg-6541xx
+      JS: sg-6541xx
+      LOGAPI: sg-6541xx
+      NAT: sg-6541xx
+      NOSQL: sg-6541xx
+      PROXY: sg-6541xx
+      RDS: sg-6541xx
+      REDIS: sg-6541xx
+      SOGEI: sg-6541xx
+      WEBRES: sg-6541xx
+      WEB: sg-6541xx
+      WHOS: sg-6541xx
+    '843352xxxx':
+      ADMIN: sg-9c823xx
+      APP: sg-ee843x
+      CHAT: sg-84833x
+      CMS: sg-1a85336x
+      DC: sg-b88533x
+      GAME: sg-4f8ex
+      JS: sg-8d843x
+      LOGAPI: sg-xx823x
+      NAT: sg-23803x
+      NOSQL: sg-65823x
+      PROXY: sg-0782x
+      RDS: sg-eb8e3x
+      REDIS: sg-e0833x
+      SOGEI: sg-ed84x
+      WEBRES: sg-ea8e3x
+      WEB: sg-24803x
 Resources:
   RDSSUBNETGROUP:
     Type: 'AWS::RDS::DBSubnetGroup'

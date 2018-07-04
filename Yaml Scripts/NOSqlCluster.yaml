@@ -4,18 +4,18 @@ Parameters:
   AMI:
     Description: AMI ID
     Type: 'AWS::EC2::Image::Id'
-    Default: ami-c798afb0
+    Default: ami-c798afx
   VpcId:
     Type: 'AWS::EC2::VPC::Id'
     Description: VpcId of your existing Virtual Private Cloud (VPC).
-    Default: vpc-875834e2
+    Default: vpc-87583xx
   Subnet1:
     Type: 'AWS::EC2::Subnet::Id'
-    Default: subnet-dae3bebf
+    Default: subnet-xxxx
     Description: The SubnetId where the cluster node 1 will be launched
   Subnet2:
     Type: 'AWS::EC2::Subnet::Id'
-    Default: subnet-d7d89da0
+    Default: subnet-xxxx
     Description: The SubnetId where the cluster node 2 will be launched
   SecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
@@ -44,7 +44,7 @@ Parameters:
     Description: URL to couchbase server software package
     Type: String
     Default: >-
-      https://s3-eu-west-1.amazonaws.com/file-repo/Couchbase/couchbase-server-enterprise_centos6_x86_64_3.1.0-1803-rel.rpm
+      https://s3-eu-west-1.amazonaws.com/xxxxx/Couchbase/couchbase-server-enterprise_centos6_x86_64_3.1.0-1803-rel.rpm
   AdministratorPassword:
     NoEcho: 'true'
     Description: Password for REST Administrator API and web-console interface

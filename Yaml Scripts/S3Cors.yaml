@@ -11,7 +11,7 @@ Parameters:
   AlternativeCNAME:
     Description: >-
       An Alternative CNAME to associate with this cloud front distribution, e.g.
-      cdn.tombola.com. Requires associating DNS entry seperately.
+      cdn.xxxx.com. Requires associating DNS entry seperately.
     Type: String
     Default: ''
   SSLCertificate:
@@ -20,18 +20,18 @@ Parameters:
       your chosen CNAME.
     Type: String
     AllowedValues:
-      - wildcard-arcade-uk
-      - wildcard-tombola-com
-      - wildcard-tombola-it
-      - wildcard-tombola-es
-      - wildcard-tombola-pt
-      - wildcard-tombola-uk
+      - wildcard-x-uk
+      - wildcard-xxxx-com
+      - wildcard-xxxx-it
+      - wildcard-xxxx-es
+      - wildcard-xxxx-pt
+      - wildcard-xxxx-uk
   Division:
     Description: The division that will be consuming/is provisioning this service.
     Type: String
     AllowedValues:
       - Core
-      - Arcade
+      - x
       - Bingo
       - International
   Team:
@@ -104,84 +104,84 @@ Metadata:
         default: Change Number
 Mappings:
   SSLCertificateToCode:
-    wildcard-tombola-uk:
+    wildcard-xxxx-uk:
       OPSPLAY: >-
-        arn:aws:acm:us-east-1:843352679768:certificate/db15a146-8bad-4ced-81f9-eb29f97b8727
+        arn:aws:acm:us-east-1:xxxx:certificate/db15a146-8bad-4ced-81f9-eb29f97b8727
       INFRA: >-
-        arn:aws:acm:us-east-1:160821142532:certificate/f2d32ccd-bb68-464f-911e-2af6f232a2f7
+        arn:aws:acm:us-east-1:xxxx:certificate/f2d32ccd-bb68-464f-911e-2af6f232a2f7
       PLAY: >-
-        arn:aws:acm:us-east-1:630702119774:certificate/1cbb652d-7497-4eac-88ad-3d46901c094d
+        arn:aws:acm:us-east-1:xxxx:certificate/1cbb652d-7497-4eac-88ad-3d46901c094d
       DEV: >-
-        arn:aws:acm:us-east-1:075458894664:certificate/47c840c1-2692-453b-a249-7c0a09cff1be
+        arn:aws:acm:us-east-1:xxxx:certificate/47c840c1-2692-453b-a249-7c0a09cff1be
       STAGE: >-
-        arn:aws:acm:us-east-1:094345010951:certificate/a736a454-2216-4ee8-9579-ea18ed7f8632
+        arn:aws:acm:us-east-1:xxxx:certificate/a736a454-2216-4ee8-9579-ea18ed7f8632
       LIVE: >-
-        arn:aws:acm:us-east-1:189470795347:certificate/994d1d9c-4f01-42b1-abd9-0a3d0b18f038
-    wildcard-tombola-it:
+        arn:aws:acm:us-east-1:xxxx:certificate/994d1d9c-4f01-42b1-abd9-0a3d0b18f038
+    wildcard-xxxx-it:
       OPSPLAY: >-
-        arn:aws:acm:us-east-1:843352679768:certificate/a5f05542-d752-4303-99a1-4b09165f5474
+        arn:aws:acm:us-east-1:xxxx:certificate/a5f05542-d752-4303-99a1-4b09165f5474
       INFRA: >-
-        arn:aws:acm:us-east-1:160821142532:certificate/160c5429-29fd-48cc-b62e-256fc2a5b745
+        arn:aws:acm:us-east-1:xxxx:certificate/160c5429-29fd-48cc-b62e-256fc2a5b745
       PLAY: >-
-        arn:aws:acm:us-east-1:630702119774:certificate/96630108-a726-4de8-a4b2-8b05f1d6bfb5
+        arn:aws:acm:us-east-1:xxxx:certificate/96630108-a726-4de8-a4b2-8b05f1d6bfb5
       DEV: >-
-        arn:aws:acm:us-east-1:075458894664:certificate/39e0868c-7e35-4d1e-98ac-3c29e4ee69ac
+        arn:aws:acm:us-east-1:xxxx:certificate/39e0868c-7e35-4d1e-98ac-3c29e4ee69ac
       STAGE: >-
-        arn:aws:acm:us-east-1:094345010951:certificate/424af40a-f891-40f2-908d-0ed87cc1a0d5
+        arn:aws:acm:us-east-1:xxxx:certificate/424af40a-f891-40f2-908d-0ed87cc1a0d5
       LIVE: >-
-        arn:aws:acm:us-east-1:189470795347:certificate/54476656-2817-48f4-b15e-86cbb261a5ac
-    wildcard-tombola-es:
+        arn:aws:acm:us-east-1:xxxx:certificate/54476656-2817-48f4-b15e-86cbb261a5ac
+    wildcard-xxxx-es:
       OPSPLAY: >-
-        arn:aws:acm:us-east-1:843352679768:certificate/4237bcf6-711e-4adc-899a-6a5b5e43ee1a
+        arn:aws:acm:us-east-1:xxxx:certificate/4237bcf6-711e-4adc-899a-6a5b5e43ee1a
       INFRA: >-
-        arn:aws:acm:us-east-1:160821142532:certificate/e1a9f56a-3279-45ca-8d47-c97b14f7357f
+        arn:aws:acm:us-east-1:xxxx:certificate/e1a9f56a-3279-45ca-8d47-c97b14f7357f
       PLAY: >-
-        arn:aws:acm:us-east-1:630702119774:certificate/8dde0ca8-bbe8-4b1a-a683-3baa4b312fab
+        arn:aws:acm:us-east-1:xxxx:certificate/8dde0ca8-bbe8-4b1a-a683-3baa4b312fab
       DEV: >-
-        arn:aws:acm:us-east-1:075458894664:certificate/79f90c17-b0f5-4d27-9122-98960d09c46b
+        arn:aws:acm:us-east-1:xxxx:certificate/79f90c17-b0f5-4d27-9122-98960d09c46b
       STAGE: >-
-        arn:aws:acm:us-east-1:094345010951:certificate/5618b983-1c88-4966-9ddb-a6a47f7cc99d
+        arn:aws:acm:us-east-1:xxxx:certificate/5618b983-1c88-4966-9ddb-a6a47f7cc99d
       LIVE: >-
-        arn:aws:acm:us-east-1:189470795347:certificate/292c03fb-6c38-4e1e-b928-dce9937729fc
-    wildcard-tombola-pt:
+        arn:aws:acm:us-east-1:xxxx:certificate/292c03fb-6c38-4e1e-b928-dce9937729fc
+    wildcard-xxxx-pt:
       OPSPLAY: >-
-        arn:aws:acm:us-east-1:843352679768:certificate/6de399d5-7757-4b45-b2b1-f1840832c36d
+        arn:aws:acm:us-east-1:xxxx:certificate/6de399d5-7757-4b45-b2b1-f1840832c36d
       INFRA: >-
-        arn:aws:acm:us-east-1:160821142532:certificate/c04f7587-8664-4940-b20c-f954dffd0885
+        arn:aws:acm:us-east-1:xxxx:certificate/c04f7587-8664-4940-b20c-f954dffd0885
       PLAY: >-
-        arn:aws:acm:us-east-1:630702119774:certificate/5e7c10fa-703e-4675-a198-9e38be451724
+        arn:aws:acm:us-east-1:xxxx:certificate/5e7c10fa-703e-4675-a198-9e38be451724
       DEV: >-
-        arn:aws:acm:us-east-1:075458894664:certificate/bc4a4bbb-8343-48e3-92a2-3a83bd4145b6
+        arn:aws:acm:us-east-1:xxxx:certificate/bc4a4bbb-8343-48e3-92a2-3a83bd4145b6
       STAGE: >-
-        arn:aws:acm:us-east-1:094345010951:certificate/f9c24e77-1552-4e52-8084-94911030798b
+        arn:aws:acm:us-east-1:xxxx:certificate/f9c24e77-1552-4e52-8084-94911030798b
       LIVE: >-
-        arn:aws:acm:us-east-1:189470795347:certificate/efd20ebf-214e-40e3-bde7-9452cac8ecf3
-    wildcard-tombola-com:
+        arn:aws:acm:us-east-1:xxxx:certificate/efd20ebf-214e-40e3-bde7-9452cac8ecf3
+    wildcard-xxxx-com:
       OPSPLAY: >-
-        arn:aws:acm:us-east-1:843352679768:certificate/86bb668d-9094-4c42-bcce-22646fdeae3b
+        arn:aws:acm:us-east-1:xxxx:certificate/86bb668d-9094-4c42-bcce-22646fdeae3b
       INFRA: >-
-        arn:aws:acm:us-east-1:160821142532:certificate/9088b486-4257-4265-9a7e-0718547bce18
+        arn:aws:acm:us-east-1:xxxx:certificate/9088b486-4257-4265-9a7e-0718547bce18
       PLAY: >-
-        arn:aws:acm:us-east-1:630702119774:certificate/0cb294d2-aa78-4958-b361-01620f8802a0
+        arn:aws:acm:us-east-1:xxxx:certificate/0cb294d2-aa78-4958-b361-01620f8802a0
       DEV: >-
-        arn:aws:acm:us-east-1:075458894664:certificate/44efcf51-5ef6-4c61-a4ef-c418dc40dd71
+        arn:aws:acm:us-east-1:xxxx:certificate/44efcf51-5ef6-4c61-a4ef-c418dc40dd71
       STAGE: >-
-        arn:aws:acm:us-east-1:094345010951:certificate/380985a0-15ef-4f98-a86c-0eb7578da581
+        arn:aws:acm:us-east-1:xxxx:certificate/380985a0-15ef-4f98-a86c-0eb7578da581
       LIVE: >-
-        arn:aws:acm:us-east-1:189470795347:certificate/c5f63720-7693-47c8-b1ce-ad9819d67cb1
-    wildcard-arcade-uk:
+        arn:aws:acm:us-east-1:xxxx:certificate/c5f63720-7693-47c8-b1ce-ad9819d67cb1
+    wildcard-x-uk:
       OPSPLAY: >-
-        arn:aws:acm:us-east-1:843352679768:certificate/fa6c73db-472b-495e-92e0-7d72068f1e3e
+        arn:aws:acm:us-east-1:xxxx:certificate/fa6c73db-472b-495e-92e0-7d72068f1e3e
       INFRA: >-
-        arn:aws:acm:us-east-1:160821142532:certificate/39a4664a-2c16-4b7b-834d-6ce59da5a644
+        arn:aws:acm:us-east-1:xxxx:certificate/39a4664a-2c16-4b7b-834d-6ce59da5a644
       PLAY: >-
-        arn:aws:acm:us-east-1:630702119774:certificate/f55557e2-204c-4ba1-baa5-34e62bf9ea2d
+        arn:aws:acm:us-east-1:xxxx:certificate/f55557e2-204c-4ba1-baa5-34e62bf9ea2d
       DEV: >-
-        arn:aws:acm:us-east-1:075458894664:certificate/cabfcb88-62d1-42e9-9b01-677ca65ebf4a
+        arn:aws:acm:us-east-1:xxxx:certificate/cabfcb88-62d1-42e9-9b01-677ca65ebf4a
       STAGE: >-
-        arn:aws:acm:us-east-1:094345010951:certificate/dbfba77e-6b72-40a4-81a1-d8a64c7adb21
+        arn:aws:acm:us-east-1:xxxx:certificate/dbfba77e-6b72-40a4-81a1-d8a64c7adb21
       LIVE: >-
-        arn:aws:acm:us-east-1:189470795347:certificate/bd2ebec3-bbdb-4f6d-a199-0f4a5f7d8bda
+        arn:aws:acm:us-east-1:xxxx:certificate/bd2ebec3-bbdb-4f6d-a199-0f4a5f7d8bda
   EnvironmentCodeToLowerCase:
     PR:
       Value: pr
@@ -194,66 +194,66 @@ Mappings:
     OPG:
       Value: opg
   AccountVariables:
-    '160821142532':
+    'xxxx':
       Environment: INFRA
       EnvironmentCode: PR
       OctopusEnvironment: DeployToEMEA
-      VpcId: vpc-e7d19182
-      PrivateSubnetA: subnet-bc2d18d9
-      PrivateSubnetB: subnet-d47e23a3
-      PublicSubnetA: subnet-d52d18b0
-      PublicSubnetB: subnet-ee7e2399
-      AdminSecurityGroup: sg-f5bbfb8c
-    075458894664:
+      VpcId: vpc-xxx
+      PrivateSubnetA: subnet-xx
+      PrivateSubnetB: subnet-xx
+      PublicSubnetA: subnet-xx
+      PublicSubnetB: subnet-xx
+      AdminSecurityGroup: sg-xxx
+    xxxx:
       Environment: DEV
       EnvironmentCode: DV
       OctopusEnvironment: DeployToDev
-      VpcId: vpc-70226d15
-      PrivateSubnetA: subnet-70184107
-      PrivateSubnetB: subnet-4ebfce17
-      PublicSubnetA: subnet-71184106
-      PublicSubnetB: subnet-41bfce18
-      AdminSecurityGroup: sg-29d16550
-    094345010951:
+      VpcId: vpc-70226x
+      PrivateSubnetA: subnet-7018xxx
+      PrivateSubnetB: subnet-xx
+      PublicSubnetA: subnet-xx
+      PublicSubnetB: subnet-xx
+      AdminSecurityGroup: sg-xxx
+    xxxx:
       Environment: STAGE
       EnvironmentCode: ST
       OctopusEnvironment: DeployToStaging
-      VpcId: vpc-3bace55e
-      PrivateSubnetA: subnet-9f2279e8
-      PrivateSubnetB: subnet-edfb88b4
-      PublicSubnetA: subnet-902279e7
-      PublicSubnetB: subnet-e98efdb0
-      AdminSecurityGroup: sg-ee7cf097
-    '189470795347':
+      VpcId: vpc-3bacex
+      PrivateSubnetA: subnet-xx
+      PrivateSubnetB: subnet-xx
+      PublicSubnetA: subnet-xx
+      PublicSubnetB: subnet-x
+      AdminSecurityGroup: sg-xxx
+    'xxxx':
       Environment: LIVE
       EnvironmentCode: PR
       OctopusEnvironment: DeployToLive
-      VpcId: vpc-2aea414f
-      PrivateSubnetA: subnet-2a3a164f
-      PrivateSubnetB: subnet-3796c240
-      PublicSubnetA: subnet-066a2663
-      PublicSubnetB: subnet-1ea42869
-      AdminSecurityGroup: sg-1c30aa65
-    '630702119774':
+      VpcId: vpc-2aeax
+      PrivateSubnetA: subnet-xx
+      PrivateSubnetB: subnet-xx
+      PublicSubnetA: subnet-xx
+      PublicSubnetB: subnet-xx
+      AdminSecurityGroup: sg-xxx
+    'xxxx':
       Environment: PLAY
       EnvironmentCode: PLY
       OctopusEnvironment: DeployToPreDev
-      VpcId: vpc-1353a174
-      PrivateSubnetA: subnet-83cff7db
-      PrivateSubnetB: subnet-f36d9194
-      PublicSubnetA: subnet-64c3fb3c
-      PublicSubnetB: subnet-4b728e2c
-      AdminSecurityGroup: sg-65413d1c
-    '843352679768':
+      VpcId: vpc-1353ax
+      PrivateSubnetA: subnet-xx
+      PrivateSubnetB: subnet-xx
+      PublicSubnetA: subnet-xx
+      PublicSubnetB: subnet-xx
+      AdminSecurityGroup: sg-xxx
+    'xxxx':
       Environment: OPSPLAY
       EnvironmentCode: OPG
       OctopusEnvironment: OpsPlayground
-      VpcId: vpc-b35ee0d4
-      PrivateSubnetA: subnet-e1d169a8
-      PrivateSubnetB: subnet-4ebb4415
-      PublicSubnetA: subnet-74d46c3d
-      PublicSubnetB: subnet-6cba4537
-      AdminSecurityGroup: sg-9c8234e4
+      VpcId: vpc-b35ee0dx
+      PrivateSubnetA: subnet-x
+      PrivateSubnetB: subnet-xx
+      PublicSubnetA: subnet-xx
+      PublicSubnetB: subnet-xx
+      AdminSecurityGroup: sg-xxx
 Resources:
   BUCKET:
     Type: 'AWS::S3::Bucket'
@@ -274,8 +274,8 @@ Resources:
             AllowedMethods:
               - GET
             AllowedOrigins:
-              - 'https://*.tombola.co.uk'
-            Id: 'https://*.tombola.co.uk/'
+              - 'https://*.xxxx.co.uk'
+            Id: 'https://*.xxxx.co.uk/'
             MaxAge: '3000'
       BucketName: !Join
         - '-'
@@ -316,7 +316,7 @@ Resources:
           - Sid: Allow Ops Access
             Effect: Allow
             Principal:
-              AWS: 'arn:aws:iam::160821142532:root'
+              AWS: 'arn:aws:iam::xxxx:root'
             Action:
               - 's3:List*'
               - 's3:Get*'

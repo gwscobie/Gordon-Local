@@ -42,7 +42,7 @@ Parameters:
       - Engine
       - Platforms
       - ISAS
-      - Infra
+      - Infrax
       - Data Engineering
   Role:
     Description: The role this service will be helping to complete.

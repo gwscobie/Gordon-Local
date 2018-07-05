@@ -41,7 +41,7 @@ Parameters:
       - Client
       - Engine
       - Platform
-      - ISA
+      - ISAS
       - Infra
       - Data Engineering
   Role:

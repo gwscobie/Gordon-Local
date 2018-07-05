@@ -43,7 +43,7 @@ Parameters:
       - Platforms
       - ISAS
       - Infrax
-      - Data Engineering
+      - Data Engineeringx
   Role:
     Description: The role this service will be helping to complete.
     Type: String

@@ -40,7 +40,7 @@ Parameters:
     AllowedValues:
       - Client
       - Engine
-      - Platform
+      - Platforms
       - ISAS
       - Infra
       - Data Engineering

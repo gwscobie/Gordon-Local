@@ -1,0 +1,351 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description" : "NAT Monitor: Template to launch two NAT nodes in an existing VPC in a hot/hot NAT configuration. This template assumes you already have a VPC configured with public subnets in 2 AZs, cooresponding subnets, and route tables configured for your private subnets.",
+    "Parameters" : {
+      "VPC" : {
+        "Description" : "VPC ID for the NAT instances (required for creating NAT security group).",
+        "Type" : "AWS::EC2::VPC::Id",
+        "Default" : "vpc-875834e2"
+      },
+      "PublicSubnet1" : {
+        "Description" : "Subnet ID for the public subnet to launch the first NAT instance into.",
+        "Type" : "AWS::EC2::Subnet::Id",
+        "Default" : "subnet-dae3bebf"
+      },
+      "PublicSubnet2" : {
+        "Description" : "Subnet ID for the public subnet to launch the second NAT instance into.",
+        "Type" : "AWS::EC2::Subnet::Id",
+        "Default" : "subnet-d7d89da0"
+      },
+      "PrivateRouteTable1" : {
+        "Description" : "Route Table ID to associate default route with NAT instance 1.",
+        "Type" : "String",
+        "Default" : "rtb-e960398c"
+      },
+      "PrivateRouteTable2" : {
+        "Description" : "Route Table ID to associate default route with NAT instance 2.",
+        "Type" : "String",
+        "Default" : "rtb-fd603998"
+      },
+      "NAT01EIPAllocationId": {
+        "Description": "The elastic IP allocation Id to associate with the NAT01 instance (leave null if none).",
+        "Type": "String",
+        "Default": ""
+      },
+      "NAT01PrivateIP": {
+        "Description": "The private IP address to be assigned to the NAT01 instance (leave null if none).",
+        "Type": "String",
+        "Default": ""
+      },
+      "NAT02EIPAllocationId": {
+        "Description": "The elastic IP allocation Id to associate with the NAT02 instance (leave null if none).",
+        "Type": "String",
+        "Default": ""
+      },
+      "NAT02PrivateIP": {
+        "Description": "The private IP address to be assigned to the NAT02 instance (leave null if none).",
+        "Type": "String",
+        "Default": ""
+      },
+      "SecurityGroups": {
+          "Type": "List<AWS::EC2::SecurityGroup::Id>",
+          "Default": "sg-7b54821f",
+          "Description": "The security groups allowed to access these servers"
+      },
+      "InstanceType": {
+          "Description": "Type of EC2 instance to launch.",
+          "Type": "String",
+          "Default": "t1.micro",
+          "AllowedValues": [
+              "t1.micro",
+              "m1.small",
+              "m1.medium",
+              "m1.large",
+              "m1.xlarge",
+              "m2.xlarge",
+              "m2.2xlarge",
+              "m2.4xlarge",
+              "c1.medium",
+              "c1.xlarge",
+              "cc1.4xlarge",
+              "cc2.8xlarge",
+              "cg1.4xlarge"
+          ],
+          "ConstraintDescription": "must be a valid EC2 instance type."
+      },
+    	"NumberOfPings" : {
+          "Description" : "The number of times the health check will ping the alternate NAT Node",
+          "Type" : "String",
+          "Default" : "5"
+        },
+    	"PingTimeout" : {
+          "Description" : "The number of seconds to wait for each ping response before determining that the ping has failed",
+          "Type" : "String",
+          "Default" : "1"
+        },
+    	"WaitBetweenPings" : {
+          "Description" : "The number of seconds to wait between health checks",
+          "Type" : "String",
+          "Default" : "2"
+        },
+    	"WaitForInstanceStop" : {
+          "Description" : "The number of seconds to wait for alternate NAT Node to stop before attempting to stop it again",
+          "Type" : "String",
+          "Default" : "60"
+        },
+    	"WaitForInstanceStart" : {
+          "Description" : "The number of seconds to wait for alternate NAT Node to restart before resuming health checks again",
+          "Type" : "String",
+          "Default" : "300"
+        },
+        "Environment": {
+          "Description": "Type of environment to launch.",
+          "Type": "String",
+          "Default": "DEV",
+          "AllowedValues": [
+              "DEV",
+              "STAGE",
+              "LIVE",
+              "INFRA"
+          ],
+          "ConstraintDescription": "must be a valid Octopus Environment instance type."
+        },
+        "Country": {
+            "Description": "Country code for stack.",
+            "Type": "String"
+        },
+        "KeyName": {
+            "Description": "The EC2 Key Pair to allow Remote Desktop access or SSH to the instances.",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Default": "EC2Connect"
+        }
+      },
+      "Mappings" : {
+        "AWSNATAMI" : {
+          "us-east-1"      : { "AMI" : "ami-54cf5c3d" },
+          "us-west-2"      : { "AMI" : "ami-8e27adbe" },
+          "us-west-1"      : { "AMI" : "ami-b63210f3" },
+          "eu-west-1"      : { "AMI" : "ami-3c5f5748" },
+          "ap-southeast-1" : { "AMI" : "ami-ba7538e8" },
+          "ap-southeast-2" : { "AMI" : "ami-b6df4e8c" },
+          "ap-northeast-1" : { "AMI" : "ami-5d7dfa5c" },
+          "sa-east-1"      : { "AMI" : "ami-89c81394" }
+        },
+        "EnvironmentToCode": {
+          "DEV": { "Value": "DV" },
+          "STAGE": { "Value": "ST" },
+          "LIVE": { "Value": "PR" },
+          "INFRA": { "Value": "INF" }
+        }
+      },
+      "Conditions": {
+        "AssociateNAT01EIP": { "Fn::Not": [ { "Fn::Equals": [ "", { "Ref": "NAT01EIPAllocationId" } ] } ] },
+        "NAT01UnspecifiedEIP": { "Fn::Equals": [ { "Ref": "NAT01EIPAllocationId" }, "" ] },
+        "NAT01UnspecifiedPrivateIP": { "Fn::Equals": [ { "Ref": "NAT01PrivateIP" }, "" ] },
+        "AssociateNAT02EIP": { "Fn::Not": [ { "Fn::Equals": [ "", { "Ref": "NAT02EIPAllocationId" } ] } ] },
+        "NAT02UnspecifiedEIP": { "Fn::Equals": [ { "Ref": "NAT02EIPAllocationId" }, "" ] },
+        "NAT02UnspecifiedPrivateIP": { "Fn::Equals": [ { "Ref": "NAT02PrivateIP" }, "" ] }
+      },
+      "Resources" : {
+        "NAT01" : {
+          "Type" : "AWS::EC2::Instance",
+          "Properties" : {
+            "InstanceType" : { "Ref" : "InstanceType" } ,
+            "KeyName" : { "Ref" : "KeyName" },
+    	      "IamInstanceProfile" : "NetworkFailover",
+            "ImageId" : { "Fn::FindInMap" : [ "AWSNATAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+            "SourceDestCheck" : "false",
+            "NetworkInterfaces": [
+                {
+                    "AssociatePublicIpAddress": {  "Fn::If": [ "AssociateNAT01EIP", "false", "true" ] },
+                    "DeviceIndex": "0",
+                    "DeleteOnTermination": "true",
+                    "SubnetId": {
+                        "Ref": "PublicSubnet1"
+                    },
+                    "PrivateIpAddress": {  "Fn::If": [ "NAT01UnspecifiedPrivateIP", { "Ref" : "AWS::NoValue" }, { "Ref": "NAT01PrivateIP" } ] },
+                    "GroupSet":  { "Ref" : "SecurityGroups" }
+                }
+            ],
+            "UserData": { "Fn::Base64" : { "Fn::Join" : ["", [
+                    "#!/bin/bash -v\n",
+                	  "yum update -y aws*\n",
+                	  ". /etc/profile.d/aws-apitools-common.sh\n",
+                    "# Configure iptables\n",
+                	  "/sbin/iptables -t nat -A POSTROUTING -o eth0 -s 0.0.0.0/0 -j MASQUERADE\n",
+                	  "/sbin/iptables-save > /etc/sysconfig/iptables\n",
+                    "# Configure ip forwarding and redirects\n",
+                    "echo 1 >  /proc/sys/net/ipv4/ip_forward && echo 0 >  /proc/sys/net/ipv4/conf/eth0/send_redirects\n",
+                	  "mkdir -p /etc/sysctl.d/\n",
+                	  "cat <<EOF > /etc/sysctl.d/nat.conf\n",
+                	  "net.ipv4.ip_forward = 1\n",
+                	  "net.ipv4.conf.eth0.send_redirects = 0\n",
+                	  "EOF\n",
+                    "# Download nat_monitor.sh and configure\n",
+                    "cd /root\n",
+                	  "wget https://tom-filerepo-pr.s3.amazonaws.com/AWSNAT/nat_monitor.sh\n",
+                	  "# Wait for NAT #2 to boot up and update PrivateRouteTable2\n",
+                	  "sleep 180\n",
+                	  "NAT_ID=\n",
+                	  "# CloudFormation should have updated the PrivateRouteTable2 by now (due to yum update), however loop to make sure\n",
+                	  "while [ \"$NAT_ID\" == \"\" ]; do\n",
+                	  "  sleep 60\n",
+                	  "  NAT_ID=`/opt/aws/bin/ec2-describe-route-tables ", { "Ref" : "PrivateRouteTable2" },
+                          " -U https://ec2.", { "Ref" : "AWS::Region" }, ".amazonaws.com | grep 0.0.0.0/0 | awk '{print $2;}'`\n",
+                	  "  #echo `date` \"-- NAT_ID=$NAT_ID\" >> /tmp/test.log\n",
+                	  "done\n",
+                	  "# Update NAT_ID, NAT_RT_ID, and My_RT_ID\n",
+                	  "sed \"s/NAT_ID=/NAT_ID=$NAT_ID/g\" /root/nat_monitor.sh > /root/nat_monitor.tmp\n",
+                	  "sed \"s/NAT_RT_ID=/NAT_RT_ID=",
+                	  { "Ref" : "PrivateRouteTable2" },
+                	  "/g\" /root/nat_monitor.tmp > /root/nat_monitor.sh\n",
+                	  "sed \"s/My_RT_ID=/My_RT_ID=",
+                	  { "Ref" : "PrivateRouteTable1" },
+                	  "/g\" /root/nat_monitor.sh > /root/nat_monitor.tmp\n",
+                	  "sed \"s/EC2_URL=/EC2_URL=https:\\/\\/ec2.",
+                	  { "Ref" : "AWS::Region" }, ".amazonaws.com",
+                	  "/g\" /root/nat_monitor.tmp > /root/nat_monitor.sh\n",
+                	  "sed \"s/Num_Pings=3/Num_Pings=",
+                	  { "Ref" : "NumberOfPings" },
+                	  "/g\" /root/nat_monitor.sh > /root/nat_monitor.tmp\n",
+                	  "sed \"s/Ping_Timeout=1/Ping_Timeout=",
+                	  { "Ref" : "PingTimeout" },
+                	  "/g\" /root/nat_monitor.tmp > /root/nat_monitor.sh\n",
+                	  "sed \"s/Wait_Between_Pings=2/Wait_Between_Pings=",
+                	  { "Ref" : "WaitBetweenPings" },
+                	  "/g\" /root/nat_monitor.sh > /root/nat_monitor.tmp\n",
+                	  "sed \"s/Wait_for_Instance_Stop=60/Wait_for_Instance_Stop=",
+                	  { "Ref" : "WaitForInstanceStop" },
+                	  "/g\" /root/nat_monitor.tmp > /root/nat_monitor.sh\n",
+                	  "sed \"s/Wait_for_Instance_Start=300/Wait_for_Instance_Start=",
+                	  { "Ref" : "WaitForInstanceStart" },
+                	  "/g\" /root/nat_monitor.sh > /root/nat_monitor.tmp\n",
+                    "mv /root/nat_monitor.tmp /root/nat_monitor.sh\n",
+                    "chmod a+x /root/nat_monitor.sh\n",
+                	  "echo '@reboot /root/nat_monitor.sh > /tmp/nat_monitor.log' | crontab\n",
+                	  "/root/nat_monitor.sh > /tmp/nat_monitor.log &\n"
+            ]]}
+          },
+          "Tags" : [
+            { "Key": "Name", "Value" : { "Fn::Join": ["", [ { "Ref": "Country" }, "NATC", { "Fn::FindInMap": [ "EnvironmentToCode", { "Ref": "Environment" }, "Value" ] }, "-01" ] ] } },
+            { "Key": "Team", "Value" : "Infra"},
+            { "Key": "Role", "Value" : "NAT"},
+            { "Key": "Country", "Value" : { "Ref": "Country" } },
+            { "Key": "Environment", "Value" : { "Ref": "Environment" } },
+            { "Key": "AMI", "Value": { "Fn::FindInMap" : [ "AWSNATAMI", { "Ref" : "AWS::Region" }, "AMI" ] } }
+          ]
+        }
+      },
+      "NAT01EIP" : {
+          "Type" : "AWS::EC2::EIPAssociation",
+          "Condition": "AssociateNAT01EIP",
+          "Properties" : {
+              "InstanceId" : {
+                  "Ref" : "NAT01"
+              },
+              "AllocationId" : {
+                  "Ref": "NAT01EIPAllocationId"
+              }
+         }
+      },
+      "NAT02" : {
+          "Type" : "AWS::EC2::Instance",
+          "Properties" : {
+            "InstanceType" : { "Ref" : "InstanceType" } ,
+            "KeyName" : { "Ref" : "KeyName" },
+    	      "IamInstanceProfile" : "NetworkFailover",
+            "ImageId" : { "Fn::FindInMap" : [ "AWSNATAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+            "SourceDestCheck" : "false",
+            "NetworkInterfaces": [
+                {
+                    "AssociatePublicIpAddress": {  "Fn::If": [ "AssociateNAT02EIP", "false", "true" ] },
+                    "DeviceIndex": "0",
+                    "DeleteOnTermination": "true",
+                    "SubnetId": {
+                        "Ref": "PublicSubnet2"
+                    },
+                    "PrivateIpAddress": {  "Fn::If": [ "NAT02UnspecifiedPrivateIP", { "Ref" : "AWS::NoValue" }, { "Ref": "NAT02PrivateIP" } ] },
+                    "GroupSet":  { "Ref" : "SecurityGroups" }
+                }
+            ],
+            "UserData": { "Fn::Base64" : { "Fn::Join" : ["", [
+                "#!/bin/bash -v\n",
+    	          "yum update -y aws*\n",
+                "# Configure iptables\n",
+    	          "/sbin/iptables -t nat -A POSTROUTING -o eth0 -s 0.0.0.0/0 -j MASQUERADE\n",
+    	          "/sbin/iptables-save > /etc/sysconfig/iptables\n",
+                "# Configure ip forwarding and redirects\n",
+                "echo 1 >  /proc/sys/net/ipv4/ip_forward && echo 0 >  /proc/sys/net/ipv4/conf/eth0/send_redirects\n",
+            	  "mkdir -p /etc/sysctl.d/\n",
+            	  "cat <<EOF > /etc/sysctl.d/nat.conf\n",
+            	  "net.ipv4.ip_forward = 1\n",
+            	  "net.ipv4.conf.eth0.send_redirects = 0\n",
+            	  "EOF\n",
+                "# Download nat_monitor.sh and configure\n",
+                "cd /root\n",
+            	  "wget https://tom-filerepo-pr.s3.amazonaws.com/AWSNAT/nat_monitor.sh\n",
+            	  "# Update NAT_ID, NAT_RT_ID, and My_RT_ID\n",
+            	  "sed \"s/NAT_ID=/NAT_ID=",
+            	  { "Ref" : "NAT01" },
+            	  "/g\" /root/nat_monitor.sh > /root/nat_monitor.tmp\n",
+            	  "sed \"s/NAT_RT_ID=/NAT_RT_ID=",
+            	  { "Ref" : "PrivateRouteTable1" },
+            	  "/g\" /root/nat_monitor.tmp > /root/nat_monitor.sh\n",
+            	  "sed \"s/My_RT_ID=/My_RT_ID=",
+            	  { "Ref" : "PrivateRouteTable2" },
+            	  "/g\" /root/nat_monitor.sh > /root/nat_monitor.tmp\n",
+            	  "sed \"s/EC2_URL=/EC2_URL=https:\\/\\/ec2.",
+            	  { "Ref" : "AWS::Region" }, ".amazonaws.com",
+            	  "/g\" /root/nat_monitor.tmp > /root/nat_monitor.sh\n",
+            	  "sed \"s/Num_Pings=3/Num_Pings=",
+            	  { "Ref" : "NumberOfPings" },
+            	  "/g\" /root/nat_monitor.sh > /root/nat_monitor.tmp\n",
+            	  "sed \"s/Ping_Timeout=1/Ping_Timeout=",
+            	  { "Ref" : "PingTimeout" },
+            	  "/g\" /root/nat_monitor.tmp > /root/nat_monitor.sh\n",
+            	  "sed \"s/Wait_Between_Pings=2/Wait_Between_Pings=",
+            	  { "Ref" : "WaitBetweenPings" },
+            	  "/g\" /root/nat_monitor.sh > /root/nat_monitor.tmp\n",
+            	  "sed \"s/Wait_for_Instance_Stop=60/Wait_for_Instance_Stop=",
+            	  { "Ref" : "WaitForInstanceStop" },
+            	  "/g\" /root/nat_monitor.tmp > /root/nat_monitor.sh\n",
+            	  "sed \"s/Wait_for_Instance_Start=300/Wait_for_Instance_Start=",
+            	  { "Ref" : "WaitForInstanceStart" },
+            	  "/g\" /root/nat_monitor.sh > /root/nat_monitor.tmp\n",
+                "mv /root/nat_monitor.tmp /root/nat_monitor.sh\n",
+                "chmod a+x /root/nat_monitor.sh\n",
+    	          "echo '@reboot /root/nat_monitor.sh > /tmp/nat_monitor.log' | crontab\n",
+    	          "/root/nat_monitor.sh >> /tmp/nat_monitor.log &\n"
+            ]]}},
+            "Tags" : [
+              { "Key": "Name", "Value" : { "Fn::Join": ["", [ { "Ref": "Country" }, "NATC", { "Fn::FindInMap": [ "EnvironmentToCode", { "Ref": "Environment" }, "Value" ] }, "-02" ] ] } },
+              { "Key": "Team", "Value" : "Infra"},
+              { "Key": "Role", "Value" : "NAT"},
+              { "Key": "Country", "Value" : { "Ref": "Country" } },
+              { "Key": "Environment", "Value" : { "Ref": "Environment" } },
+              { "Key": "AMI", "Value": { "Fn::FindInMap" : [ "AWSNATAMI", { "Ref" : "AWS::Region" }, "AMI" ] } }
+            ]
+          }
+       },
+       "NAT02EIP" : {
+           "Type" : "AWS::EC2::EIPAssociation",
+           "Condition": "AssociateNAT02EIP",
+           "Properties" : {
+               "InstanceId" : {
+                   "Ref" : "NAT02"
+               },
+               "AllocationId" : {
+                   "Ref": "NAT02EIPAllocationId"
+               }
+          }
+       }
+    },
+    "Outputs" : {
+      "PrivateRouteTable1" : {
+        "Value" : { "Fn::Join" : [ "", [ { "Ref" : "PrivateRouteTable1" }, " (0.0.0.0/0 -> ", { "Ref" : "NAT01" }, ")" ]] }
+      },
+      "PrivateRouteTable2" : {
+        "Value" : { "Fn::Join" : [ "", [ { "Ref" : "PrivateRouteTable2" }, " (0.0.0.0/0 -> ", { "Ref" : "NAT02" }, ")" ]] }
+      }
+    }
+}
